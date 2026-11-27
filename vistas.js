@@ -128,6 +128,7 @@ render = function () {
       <div class="emp-hours"><i class="ti ti-clock"></i>${fmtH(h)} en el mes</div>
     </div></div>` + celdas;
   }
+  html += coberturaMes(dias);
   g.classList.add('mes'); g.style.gridTemplateColumns = `282px repeat(${n}, 68px)`; g.style.minWidth = 'max-content';
   g.innerHTML = html;
   renderHeader(); actualizarBarra(); pintarModo();
@@ -716,10 +717,10 @@ paintDrawer = function () { if (dr && dr.vista === 'turnoCeldas') { $('drFoot').
 
 /* ---------- Coachmark: colaborador sin rol laboral ---------- */
 let coachRolEmp = null;
-function mostrarCoachRol(id) {
+function mostrarCoachRol(id, texto) {
   const chip = document.querySelector(`.emp-sinrol[data-e="${id}"]`); if (!chip) return;
   coachRolEmp = id; const c = COLABORADORES[id];
-  $('coachRolTxt').textContent = `${c.nombre} no tiene un rol laboral asignado, así que la cobertura y Programar no lo tienen en cuenta. Asignale un puesto desde Admin > Usuarios > Trabajo.`;
+  $('coachRolTxt').textContent = texto || `${c.nombre} no tiene un rol laboral asignado, así que la cobertura y Programar no lo tienen en cuenta. Asignale un puesto desde Admin > Usuarios > Trabajo.`;
   document.querySelectorAll('.emp-sinrol.spot').forEach(x => x.classList.remove('spot'));
   chip.classList.add('spot'); $('coachRol').classList.add('open'); ubicarCoachRol();
 }
@@ -744,5 +745,62 @@ function avisoSinRol() {
   let visto = false; try { visto = sessionStorage.getItem('luna:avisoRol') === '1'; sessionStorage.setItem('luna:avisoRol', '1'); } catch (e) {}
   if (!visto) { ch.scrollIntoView({ block: 'center' }); mostrarCoachRol(+ch.dataset.e); }
 }
+
+/* ---------- Cobertura: rango de la semana, vista mensual y validaciones de Programar ---------- */
+const rangoLargo = () => { const a = fechaDe(SEM, 0), b = fechaDe(SEM, 6); return `Entre el lunes ${a.getDate()} de ${MESES[a.getMonth()]} y el domingo ${b.getDate()} de ${MESES[b.getMonth()]}`; };
+function textoOrigen() {
+  const o = semanaOrigen(sedeSel); if (o === null || o === SEM) return '';
+  return `<span style="font-weight:400">Se mantiene desde la semana del ${dma(fechaDe(o, 0)).slice(0, 5)}</span>`;
+}
+// Vista mensual simplificada: por día, personas cubiertas sobre requeridas. Clic en un día: abre esa semana con la cobertura desplegada.
+function coberturaMes(dias) {
+  let html = `<div class="cov-h first" id="covMes"><i class="ti ti-users-group"></i>Cobertura</div>`;
+  dias.forEach(f => {
+    const { off, d } = ubicar(f);
+    const cob = sedeSel ? coberturaDe(sedeSel, off) : [];
+    const req = cob.reduce((a, g) => a + g.roles.reduce((b, r) => b + r.cant, 0), 0);
+    if (!sedeSel || !req) { html += `<div class="cov-h" data-off="${off}" data-d="${d}" title="${sedeSel ? 'Sin cobertura requerida' : 'Seleccioná una sede'}">–</div>`; return; }
+    const pool = COLABORADORES.filter(c => c.sede === sedeSel);
+    const ok = cob.reduce((a, g) => a + g.roles.reduce((b, r) => b + Math.min(pool.filter(c => c.rol === r.rol && semanaDe(c, off)[d].includes(g.turno)).length, r.cant), 0), 0);
+    html += `<div class="cov-h ${ok === req ? 'ok' : 'falta'}" data-off="${off}" data-d="${d}" title="Vista ${vistaDe(sedeSel, coberturaConfig(), off).nombre}: ${ok} de ${req} personas">${ok}/${req}</div>`;
+  });
+  return html;
+}
+$('grid').addEventListener('click', e => {
+  if (MODO !== 'mes') return;
+  if (e.target.closest('#covMes')) { e.stopPropagation(); if (!sedeSel) { window.scrollTo({ top: 0, behavior: 'smooth' }); showCoach(); } return; }
+  const h = e.target.closest('.cov-h[data-off]'); if (!h) return;
+  e.stopPropagation();
+  if (!sedeSel) { window.scrollTo({ top: 0, behavior: 'smooth' }); return showCoach(); }
+  irASemana(+h.dataset.off); MODO = 'semana'; covOpen = true; render();
+  const t = $('covToggle'); if (t) t.scrollIntoView({ block: 'center' });
+}, true);
+
+// Validación 2: colaboradores sin rol laboral
+function avisarSinRol(lista) {
+  const ch = document.querySelector(`.emp-sinrol[data-e="${lista[0].id}"]`); if (ch) ch.scrollIntoView({ block: 'center' });
+  const n = lista.length;
+  mostrarCoachRol(lista[0].id, `Antes de programar, asigná un rol laboral a ${n === 1 ? lista[0].nombre : `${n} colaboradores de ${sedeSel}`}. Sin rol, el motor no sabe qué turnos puede cubrir. Configuralo en Admin > Usuarios > Trabajo.`);
+}
+// Validación 3: falta asignar una vista de cobertura
+function avisarSinCobertura() {
+  covOpen = true; render();
+  const t = $('covToggle'); if (t) t.scrollIntoView({ block: 'center' });
+  $('coachCobTxt').textContent = `Para programar la semana del ${rangoCorto()}, elegí la vista de cobertura que necesita ${sedeSel}.`;
+  $('coachCob').classList.add('open'); ubicarCoachCob();
+}
+function ubicarCoachCob() {
+  if (!$('coachCob').classList.contains('open')) return;
+  const b = $('covAdd'); if (!b) return ocultarCoachCob();
+  b.classList.add('spot'); const r = b.getBoundingClientRect();
+  $('coachCob').style.left = (r.left - 14) + 'px'; $('coachCob').style.top = (r.bottom + 12) + 'px';
+}
+function ocultarCoachCob() { $('coachCob').classList.remove('open'); const b = $('covAdd'); if (b) b.classList.remove('spot'); }
+window.addEventListener('scroll', ubicarCoachCob, { passive: true }); window.addEventListener('resize', ubicarCoachCob);
+$('coachCob').addEventListener('click', e => e.stopPropagation());
+$('coachCobNo').onclick = ocultarCoachCob;
+$('coachCobIr').onclick = () => { ocultarCoachCob(); abrirVistas(); };
+const _renderCob = render;
+render = function () { _renderCob(); if ($('coachCob').classList.contains('open')) requestAnimationFrame(ubicarCoachCob); };
 
 pintarFechas(); render(); setTimeout(avisoSinRol, 300);

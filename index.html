@@ -588,6 +588,13 @@ body.full .card{border:0;border-radius:0}
 .emp-hours.under{color:#9a5b00}
 .emp-hours.under u{text-decoration-color:#d98a00}
 .emp-hours.under .ti-clock{color:#d98a00}
+
+.cov-cell.vacia{justify-content:center;color:#7a818c;font-size:12.5px;text-align:center}
+#covAdd.spot{box-shadow:0 0 0 3px rgba(59,91,219,.25)}
+.grid.mes .cov-h{height:44px;font-size:12px;gap:3px}
+.grid.mes .cov-h:not(.first){cursor:pointer}
+.grid.mes .cov-h:not(.first):hover{background:#f6f7fb}
+.grid.mes .cov-h.falta{color:#9a5b00;font-weight:600}
 </style>
 </head>
 <body>
@@ -668,6 +675,7 @@ body.full .card{border:0;border-radius:0}
   <button data-v="plantilla"><span class="ic"><i class="ti ti-template"></i></span>Asignar plantilla</button>
 </div>
 <div class="coach" id="coachRol"><div class="t">Falta el rol laboral</div><div class="d" id="coachRolTxt"></div><div class="a" style="gap:8px"><button class="btn-ghost" id="coachRolNo" style="flex:none;height:34px">Entendido</button><button class="btn-primary" id="coachRolIr">Ir al Admin</button></div></div>
+<div class="coach" id="coachCob"><div class="t">Asigná una cobertura</div><div class="d" id="coachCobTxt"></div><div class="a" style="gap:8px"><button class="btn-ghost" id="coachCobNo" style="flex:none;height:34px">Entendido</button><button class="btn-primary" id="coachCobIr">Agregar cobertura</button></div></div>
 <div class="coach" id="coach"><div class="t">Seleccioná una sede</div><div class="d" id="coachTxt"></div><div class="a"><button class="btn-primary" id="coachOk">Entendido</button></div></div>
 <div class="overlay" id="overlay"></div>
 <aside class="drawer" id="drawer">
@@ -813,14 +821,15 @@ function renderCobertura(){
     const ok = coberturaDe(sedeSel).reduce((a,g)=>a+g.roles.reduce((b,r)=>b+Math.min(cubiertos(d,g.turno,r.rol),r.cant),0),0);
     html += `<div class="cov-h ${ok===reqDia?'ok':''}"><i class="ti ti-user"></i>${ok} / ${reqDia}</div>`;
   });
-  if(!(covOpen && sedeSel && reqDia)) return html;
+  if(!(covOpen && sedeSel)) return html;
   html += `<div class="cov-side">
     <button class="cov-btn" disabled><i class="ti ti-sparkles"></i>Generar cobertura</button>
     <div class="cov-note">Disponible más adelante</div>
     <button class="cov-btn" id="covAdd"><i class="ti ti-plus"></i>Agregar cobertura</button>
-    <div class="cov-vista">Vista aplicada<b>${vistaDe(sedeSel).nombre}</b></div></div>`;
+    <div class="cov-vista">Vista aplicada<b>${vistaDe(sedeSel).nombre}</b>${textoOrigen()}</div></div>`;
   DIAS.forEach((_,d)=>{
     if(FESTIVOS.includes(d)){ html += `<div class="cov-cell fest">Festivo</div>`; return; }
+    if(!reqDia){ html += `<div class="cov-cell vacia">Sin cobertura requerida</div>`; return; }
     html += `<div class="cov-cell">` + coberturaDe(sedeSel).map(g=>{
       const t=TURNOS[g.turno];
       let all=true;
@@ -1048,7 +1057,6 @@ $('grid').addEventListener('click', e => {
   if(e.target.closest('#covToggle')){
     e.stopPropagation();
     if(!sedeSel){ window.scrollTo({top:0,behavior:'smooth'}); showCoach(); return; }
-    if(!coberturaDe(sedeSel).length){ toast(`La vista de cobertura aplicada en ${sedeSel} no requiere personal`, 'warn'); return; }
     covOpen=!covOpen; render(); return;
   }
   if(e.target.closest('#covAdd')){ e.stopPropagation(); abrirVistas(); }
@@ -1211,10 +1219,14 @@ function stepperCm(val, data){ return `<div class="num"><button data-step="-1" a
 function pintarVistas(){
   const el = $('cm');
   const cabecera = t => `<div class="cm-ic"><i class="ti ti-users-group"></i></div><button class="cm-x" id="cmX" aria-label="Cerrar"><i class="ti ti-x"></i></button><h3>${t}</h3>
-    <div class="cm-range"><i class="ti ti-calendar-event"></i>Entre el lunes 30 de noviembre y el domingo 6 de diciembre · ${sedeSel}</div>`;
+    <div class="cm-range"><i class="ti ti-calendar-event"></i>${rangoLargo()} · ${sedeSel}</div>`;
   if(cm.modo === 'lista'){
-    const aplicada = cm.cfg.aplicada[sedeSel];
+    const aplicada = vistaDe(sedeSel, cm.cfg).id;
     el.innerHTML = cabecera('Vistas de cobertura') + `<div class="cm-lbl">Vista de cobertura para aplicar:</div><div class="cm-list">` +
+      `<div class="cm-card ${cm.sel==='ninguna'?'on':''}" data-id="ninguna" role="radio" aria-checked="${cm.sel==='ninguna'}" tabindex="0">
+          <div class="cm-row"><b>Ninguna</b>${aplicada==='ninguna'?'<span class="cm-tag">Aplicada</span>':''}<span class="cm-radio"></span></div>
+          ${cm.sel==='ninguna' ? '<div class="cm-det"><div><i class="ti ti-info-circle"></i>La sede no requiere cobertura mínima esta semana. Programar no genera turnos.</div></div>' : ''}
+        </div>` +
       cm.cfg.vistas.map(v => { const r = resumenVista(v), on = v.id === cm.sel;
         return `<div class="cm-card ${on?'on':''}" data-id="${v.id}" role="radio" aria-checked="${on}" tabindex="0">
           <div class="cm-row"><b>${v.nombre}</b>${v.id===aplicada?'<span class="cm-tag">Aplicada</span>':''}<span class="cm-radio"></span></div>
@@ -1226,7 +1238,7 @@ function pintarVistas(){
             <button class="link" data-edit="${v.id}"><i class="ti ti-edit"></i>Editar vista</button>
           </div>` : ''}
         </div>`; }).join('') +
-      `</div><div class="cm-or"><span>o</span></div>
+      `</div><div class="cm-hint" style="text-align:left;margin-top:10px">La vista se aplica a esta semana y a las siguientes, hasta que elijas otra vista para una semana posterior.</div><div class="cm-or"><span>o</span></div>
       <div style="text-align:center"><button class="cm-new" id="cmNew"><i class="ti ti-plus"></i>Nueva vista de cobertura</button>
       <div class="cm-hint">Creá una vista para otra temporada o un evento, por ejemplo Hot Sale, Día de la Madre o Navidad.</div></div>
       <div class="cm-foot"><button class="cm-cancel" id="cmCancel">Cancelar</button><button class="btn-primary" id="cmApply">Aplicar</button></div>`;
@@ -1250,7 +1262,7 @@ $('cmBg').addEventListener('click', e => {
   const ed = e.target.closest('[data-edit]');
   if(ed){ const v = cm.cfg.vistas.find(x=>x.id===ed.dataset.edit); cm.modo='editar'; cm.draft=clonar(v); return pintarVistas(); }
   if(card){ cm.sel = card.dataset.id; return pintarVistas(); }
-  if(e.target.closest('#cmNew')){ const base = cm.cfg.vistas.find(x=>x.id===cm.sel) || cm.cfg.vistas[0]; cm.modo='nueva'; cm.draft={id:'v'+Date.now(), nombre:'', turnos:clonar(base.turnos)}; pintarVistas(); $('cmNombre').focus(); return; }
+  if(e.target.closest('#cmNew')){ const base = cm.cfg.vistas.find(x=>x.id===cm.sel) || VISTAS_BASE[0]; cm.modo='nueva'; cm.draft={id:'v'+Date.now(), nombre:'', turnos:clonar(base.turnos)}; pintarVistas(); $('cmNombre').focus(); return; }
   if(e.target.closest('#cmBack')){ cm.modo='lista'; return pintarVistas(); }
   const st = e.target.closest('[data-step]');
   if(st){ const inp = st.parentElement.querySelector('input'); inp.value = Math.max(0, Number(inp.value||0)+Number(st.dataset.step)); inp.dispatchEvent(new Event('change',{bubbles:true})); return; }
@@ -1263,10 +1275,10 @@ $('cmBg').addEventListener('click', e => {
     cm.sel = cm.draft.id; cm.modo = 'lista'; Store.set('cobertura', cm.cfg); render(); return pintarVistas();
   }
   if(e.target.closest('#cmApply')){
-    const v = cm.cfg.vistas.find(x=>x.id===cm.sel);
-    cm.cfg.aplicada[sedeSel] = cm.sel; Store.set('cobertura', cm.cfg);
-    const sede = sedeSel; cerrarVistas(); covOpen = true;
-    toast(`Aplicaste la vista ${v.nombre} en ${sede}`); return;
+    const v = cm.sel === 'ninguna' ? VISTA_NINGUNA : cm.cfg.vistas.find(x=>x.id===cm.sel);
+    cm.cfg.semanas[sedeSel][SEM] = cm.sel; Store.set('cobertura', cm.cfg);
+    const sede = sedeSel; cerrarVistas(); covOpen = true; ocultarCoachCob(); render();
+    toast(`Aplicaste la vista ${v.nombre} en ${sede} desde la semana del ${rangoCorto()}`); return;
   }
 });
 $('cmBg').addEventListener('change', e => {
@@ -1280,8 +1292,11 @@ $('cmBg').addEventListener('keydown', e => { const card = e.target.closest && e.
 let deshacer = null;
 $('progBtn').onclick = e => {
   e.stopPropagation(); closePop();
+  // Validaciones previas, en orden: sede, roles laborales y cobertura
   if(!sedeSel){ window.scrollTo({top:0,behavior:'smooth'}); showCoach('programar'); return; }
-  if(!coberturaDe(sedeSel).length){ toast(`La vista de cobertura aplicada en ${sedeSel} no requiere personal`, 'warn'); return; }
+  const sinRol = visibles().filter(c => !c.rol);
+  if(sinRol.length) return avisarSinRol(sinRol);
+  if(!coberturaDe(sedeSel).length) return avisarSinCobertura();
   modal('Programar turnos',
     `Se generará un borrador de la semana del ${rangoCorto()} para <b>${sedeSel}</b>, que cubre la cobertura requerida y respeta las regulaciones y las licencias aprobadas. Vas a poder ajustarlo antes de publicar.
      <label class="check" style="margin-top:14px"><input type="checkbox" id="mantener" checked><span>Mantener los turnos ya asignados<small>Si lo desmarcás, se reemplaza la programación actual de la sede.</small></span></label>`,
@@ -1358,7 +1373,7 @@ $('ddClear').addEventListener('click', () => { sedeSel = null; covOpen = false; 
 $('q').addEventListener('input', () => { focus = null; render(); });
 
 /* Al volver del Admin (o si las reglas cambian en otra pestaña) se releen las reglas y se redibuja */
-function refrescarReglas(){ Motor.recargarReglas(); if(sedeSel && !coberturaDe(sedeSel).length) covOpen = false; render(); }
+function refrescarReglas(){ Motor.recargarReglas(); render(); }
 window.addEventListener('pageshow', e => { if(e.persisted) refrescarReglas(); });
 window.addEventListener('focus', refrescarReglas);
 /* Si se cambió un puesto en Admin > Usuarios, la app toma el nuevo rol al volver */

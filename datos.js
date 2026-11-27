@@ -139,13 +139,29 @@ const HORARIOS = [
 /* Configuración de cobertura: vistas disponibles y vista aplicada en cada sede */
 function coberturaConfig(){
   const c = Store.get('cobertura', null);
-  if(c && c.vistas && c.vistas.length) return c;
-  return { vistas: JSON.parse(JSON.stringify(VISTAS_BASE)), aplicada: {Olivos:'normal', Recoleta:'normal'} };
+  const cfg = (c && c.vistas && c.vistas.length) ? c : { vistas: JSON.parse(JSON.stringify(VISTAS_BASE)) };
+  // La vista se aplica por semana: semanas[sede][semana] = id de vista ('ninguna' si no se requiere cobertura).
+  // Una semana sin vista propia usa la de la semana anterior más cercana; si no hay ninguna, no requiere cobertura.
+  if(!cfg.semanas){ cfg.semanas = {}; SEDES.flatMap(g => g.items).forEach(s => { cfg.semanas[s] = cfg.aplicada && cfg.aplicada[s] ? { 0: cfg.aplicada[s] } : {}; }); delete cfg.aplicada; }
+  SEDES.flatMap(g => g.items).forEach(s => { cfg.semanas[s] = cfg.semanas[s] || {}; });
+  return cfg;
 }
-function vistaDe(sede, cfg = coberturaConfig()){ return cfg.vistas.find(v => v.id === cfg.aplicada[sede]) || cfg.vistas[0]; }
+const VISTA_NINGUNA = { id: 'ninguna', nombre: 'Ninguna', turnos: {} };
+const semanaActual = () => typeof SEM !== 'undefined' ? SEM : 0;
+function vistaDe(sede, cfg = coberturaConfig(), off = semanaActual()){
+  const marcas = Object.keys(cfg.semanas[sede] || {}).map(Number).filter(w => w <= off);
+  if(!marcas.length) return VISTA_NINGUNA;
+  const id = cfg.semanas[sede][Math.max(...marcas)];
+  return cfg.vistas.find(v => v.id === id) || VISTA_NINGUNA;
+}
+/* Semana desde la que rige la vista aplicada (para avisar si se heredó de una semana anterior) */
+function semanaOrigen(sede, cfg = coberturaConfig(), off = semanaActual()){
+  const marcas = Object.keys(cfg.semanas[sede] || {}).map(Number).filter(w => w <= off);
+  return marcas.length ? Math.max(...marcas) : null;
+}
 /* Cobertura vigente para una sede: la de su vista aplicada. Los roles en 0 no se muestran. */
-function coberturaDe(sede){
+function coberturaDe(sede, off = semanaActual()){
   if(!sede) return [];
-  const v = vistaDe(sede); if(!v) return [];
+  const v = vistaDe(sede, coberturaConfig(), off); if(!v) return [];
   return Object.keys(TURNOS).filter(t => v.turnos[t]).map(t => ({turno:t, roles:ROLES.map(rol => ({rol, cant:Number(v.turnos[t][rol]||0)})).filter(r => r.cant > 0)})).filter(g => g.roles.length);
 }
