@@ -64,6 +64,11 @@ const ICONS = {
  'clipboard':'<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/>',
  'deselect':'<path d="M4 8V6a2 2 0 0 1 2-2h2M4 16v2a2 2 0 0 0 2 2h2M16 4h2a2 2 0 0 1 2 2v2M16 20h2a2 2 0 0 0 2-2v-2M8 8l8 8M16 8l-8 8"/>',
  'select-all':'<path d="M4 8V6a2 2 0 0 1 2-2h2M4 16v2a2 2 0 0 0 2 2h2M16 4h2a2 2 0 0 1 2 2v2M16 20h2a2 2 0 0 0 2-2v-2"/><rect x="8" y="8" width="8" height="8" rx="1"/>',
+ 'stack-2':'<path d="M8 4h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M4 8v10a2 2 0 0 0 2 2h10"/>',
+ 'grip-vertical':'<circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>',
+ 'moon':'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>',
+ 'calendar-x':'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16M10 14l4 4M14 14l-4 4"/>',
+ 'calendar-off':'<path d="M9 5h9a2 2 0 0 1 2 2v9m-.6 3.4A2 2 0 0 1 18 21H6a2 2 0 0 1-2-2V7a2 2 0 0 1 1.4-1.9M4 11h7m4 0h5M16 3v4M8 3v1M3 3l18 18"/>',
  'calendar-plus':'<path d="M12.5 21H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5M16 3v4M8 3v4M4 11h16M16 19h6M19 16v6"/>',
  'clock':'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
 };

@@ -24,14 +24,18 @@ const PAISES = [...new Set(Object.values(SEDE_PAIS))]; // países donde la empre
 const CAPACIDAD = 48;
 
 const TURNOS = {
-  AP:{nombre:'Turno apertura', inicio:'09:00', fin:'17:00', horas:8},
-  CI:{nombre:'Turno cierre',   inicio:'11:00', fin:'19:00', horas:8},
+  AP:{nombre:'Turno apertura', inicio:'09:00', fin:'17:00', horas:8, color:'Azul', desc:''},
+  CI:{nombre:'Turno cierre',   inicio:'11:00', fin:'19:00', horas:8, color:'Rosa', desc:''},
 };
+/* Repositorio de turnos: los turnos creados, editados o eliminados desde la app se guardan y pisan a los de arriba */
+Object.assign(TURNOS, Store.get('turnos', {}));
 /* Plantillas de ejemplo para "Asignar plantilla" (se aplican desde la fecha de inicio hasta el domingo) */
 const PLANTILLAS = [
-  {nombre:'5x2 apertura', resumen:'5 turnos, 2 descansos', detalle:'trabaja 5 días, descansa 2', patron:['AP','AP','AP','AP','AP','D','D']},
-  {nombre:'6x1 cierre',   resumen:'6 turnos, 1 descanso',  detalle:'trabaja 6 días, descansa 1', patron:['CI','CI','CI','CI','CI','CI','D']},
+  {id:'P1', nombre:'5x2 apertura', desc:'Trabaja 5 días y descansa 2', patron:['AP','AP','AP','AP','AP','D','D']},
+  {id:'P2', nombre:'6x1 cierre',   desc:'Trabaja 6 días y descansa 1', patron:['CI','CI','CI','CI','CI','CI','D']},
 ];
+/* Plantillas creadas, editadas o eliminadas desde el Repositorio de turnos */
+(() => { const g = Store.get('plantillas', null); if (Array.isArray(g)) PLANTILLAS.splice(0, PLANTILLAS.length, ...g); })();
 
 /* Vistas de cobertura por estacionalidad: cantidad de personas por turno y por rol que la sede necesita cada día.
    Se eligen y editan desde Turnos laborales (Cobertura > Agregar cobertura). Cada sede aplica una vista por semana. */
