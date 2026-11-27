@@ -43,19 +43,24 @@ const MOTOR_CONFIG = {
     { id: 'equidad',     descripcion: 'Reparto equitativo de fines de semana',          ponderacion: 'BAJO' },
   ],
   pesoDesempate: 0.5, // menor carga horaria relativa
+  // Comportamiento de cada regulación en la grilla: 'A' advertencia (se puede publicar) o 'B' bloqueante
+  severidad: { diario: 'A', semana: 'A', entre: 'B', semanal: 'B' },
 };
 
 /* Reglas configuradas desde Admin > Reglas (si existen). Una regla de regulación apagada queda en null y no se valida. */
-const MOTOR_DEFAULTS = JSON.parse(JSON.stringify({ regulacion: MOTOR_CONFIG.regulacion, preferencias: MOTOR_CONFIG.preferencias }));
+const MOTOR_DEFAULTS = JSON.parse(JSON.stringify({ regulacion: MOTOR_CONFIG.regulacion, preferencias: MOTOR_CONFIG.preferencias, severidad: MOTOR_CONFIG.severidad }));
+const TIPO_DE_REGLA = { topeDiario: 'diario', topeSemanal: 'semana', descansoEntreJornadas: 'entre', descansoSemanal: 'semanal' };
 function aplicarReglasGuardadas() {
   // Se parte siempre de los valores predeterminados (modificando los mismos objetos, que la app referencia)
   Object.assign(MOTOR_CONFIG.regulacion, MOTOR_DEFAULTS.regulacion);
+  Object.assign(MOTOR_CONFIG.severidad, MOTOR_DEFAULTS.severidad);
   MOTOR_CONFIG.preferencias.forEach((p, i) => p.ponderacion = MOTOR_DEFAULTS.preferencias[i].ponderacion);
   const cfg = typeof REGLAS_GUARDADAS !== 'undefined' ? REGLAS_GUARDADAS : null;
   if (!cfg) return;
   const reg = cfg.regulacion && cfg.regulacion.Argentina; // por ahora todas las sedes están en Argentina
   if (reg) ['topeDiario', 'topeSemanal', 'descansoEntreJornadas', 'descansoSemanal'].forEach(k => {
     if (reg[k]) MOTOR_CONFIG.regulacion[k] = reg[k].on ? Number(reg[k].valor) : null;
+    if (reg[k] && (reg[k].sev === 'A' || reg[k].sev === 'B')) MOTOR_CONFIG.severidad[TIPO_DE_REGLA[k]] = reg[k].sev;
   });
   if (cfg.motor) MOTOR_CONFIG.preferencias.forEach(p => { if (cfg.motor[p.id]) p.ponderacion = cfg.motor[p.id]; });
 }
@@ -70,11 +75,11 @@ const Motor = (() => {
   const TIPOS = {
     solap:    { titulo: 'Turnos solapados',                    sev: 'B' },
     desc:     { titulo: 'Turno en día de descanso',            sev: 'B' },
-    semanal:  { titulo: 'Descanso semanal obligatorio',        sev: 'B', regla: R.descansoSemanal != null ? `Mínimo ${R.descansoSemanal}h corridas en la semana` : '' },
-    entre:    { titulo: 'Descanso entre jornadas',             sev: 'B', regla: R.descansoEntreJornadas != null ? `Mínimo ${R.descansoEntreJornadas}h corridas` : '' },
+    semanal:  { titulo: 'Descanso semanal obligatorio',        sev: MOTOR_CONFIG.severidad.semanal, regla: R.descansoSemanal != null ? `Mínimo ${R.descansoSemanal}h corridas en la semana` : '' },
+    entre:    { titulo: 'Descanso entre jornadas',             sev: MOTOR_CONFIG.severidad.entre, regla: R.descansoEntreJornadas != null ? `Mínimo ${R.descansoEntreJornadas}h corridas` : '' },
     licencia: { titulo: 'Turno durante vacaciones o ausencia', sev: 'A' },
-    diario:   { titulo: 'Máximo de horas diario',                sev: 'A', regla: R.topeDiario != null ? `Máximo ${R.topeDiario}h por día` : '' },
-    semana:   { titulo: 'Máximo de horas semanal',               sev: 'A', regla: R.topeSemanal != null ? `Máximo ${R.topeSemanal}h por semana` : '' },
+    diario:   { titulo: 'Máximo de horas diario',                sev: MOTOR_CONFIG.severidad.diario, regla: R.topeDiario != null ? `Máximo ${R.topeDiario}h por día` : '' },
+    semana:   { titulo: 'Máximo de horas semanal',               sev: MOTOR_CONFIG.severidad.semana, regla: R.topeSemanal != null ? `Máximo ${R.topeSemanal}h por semana` : '' },
   };
 
   /* ---------- Validador: conflictos de un colaborador ---------- */
@@ -214,6 +219,7 @@ const Motor = (() => {
     if (typeof Store !== 'undefined') REGLAS_GUARDADAS = Store.get('reglas', null);
     aplicarReglasGuardadas();
     const R = MOTOR_CONFIG.regulacion;
+    ['diario', 'semana', 'entre', 'semanal'].forEach(t => { TIPOS[t].sev = MOTOR_CONFIG.severidad[t]; });
     TIPOS.semanal.regla = R.descansoSemanal != null ? `Mínimo ${R.descansoSemanal}h corridas en la semana` : '';
     TIPOS.entre.regla = R.descansoEntreJornadas != null ? `Mínimo ${R.descansoEntreJornadas}h corridas` : '';
     TIPOS.diario.regla = R.topeDiario != null ? `Máximo ${R.topeDiario}h por día` : '';

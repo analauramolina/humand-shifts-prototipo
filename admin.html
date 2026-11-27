@@ -353,6 +353,52 @@ h1{font-size:22px;font-weight:600;margin:4px 0 22px}
 .legend .lg.pub{background:#fff;box-shadow:inset 3px 0 0 #3d5fd6;border:1px solid var(--line)}
 .legend .lg.bor{background:repeating-linear-gradient(135deg,#fff 0 3px,#eef0f3 3px 6px);border:1px solid var(--line)}
 .legend .lg.disp{background:#f7f8fa;border:1px solid var(--line)}
+
+/* Reglas: tarjetas con tabla, segmentados y ayudas */
+.sec.rg{padding:0;overflow:visible}
+.rg-h{display:flex!important;align-items:center;gap:16px;padding:20px 24px;cursor:pointer}
+.rg-tt{flex:1;min-width:0}
+.rg-t1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rg-t1 h3{margin:0;font-size:17px}
+#regPais{display:inline-flex;align-items:center;gap:7px;font-size:14.5px;color:#2b3038}
+#regPais .ti{font-size:17px}
+#regPais b{font-weight:500}
+#regPais span{color:var(--muted)}
+.rg-dot{color:#a3a9b5!important}
+.rg-h .bj{margin-top:4px}
+.rg-cnt{font-size:14px;color:var(--muted);white-space:nowrap}
+.acc .acc-b{margin-top:0}
+.rg-tab{border-top:1px solid var(--line)}
+.rg-row{display:grid;align-items:center;gap:16px;padding:14px 24px;border-top:1px solid var(--line)}
+.rg-row.head{border-top:0;background:#fafbfc;padding:11px 24px;font-size:13.5px;color:var(--muted)}
+.rg-row.reg{grid-template-columns:minmax(220px,1fr) minmax(220px,1fr) 190px 70px}
+.rg-row.mot{grid-template-columns:minmax(260px,1.4fr) minmax(220px,1fr) 70px}
+.rg-row .c{justify-self:end;text-align:right}
+.rg-row.head .c{justify-self:end}
+.rg-n{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500;color:#1f2329}
+.rg-row.off .rg-n{color:#8a909b}
+.sg{display:inline-flex;background:#f1f3f7;border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
+.sg button{border:1px solid transparent;background:none;border-radius:7px;padding:6px 13px;font-size:13.5px;font-weight:500;color:#5f6673}
+.sg button:hover:not(:disabled):not(.on){color:#1f2329}
+.sg button.on{background:#fff;border-color:#c9d3f3;color:var(--primary)}
+.sg button.on.A{background:#fff6e5;border-color:#f3cf8a;color:#8a5300}
+.sg button.on.B{background:#fdecee;border-color:#f1a7ae;color:#c62828}
+.sg button:disabled{cursor:default;opacity:.55}
+.rg-row .num{height:40px}
+.rg-row .sw{display:inline-block;vertical-align:middle}
+.rg-row .num input{width:44px}
+.rg-row .num span{white-space:nowrap}
+.rg-pie{display:flex;gap:8px;align-items:flex-start;border-top:1px solid var(--line);padding:14px 24px;font-size:13.5px;color:var(--muted);line-height:1.45}
+.rg-pie .ti{font-size:16px;margin-top:1px}
+.pop{position:relative;display:inline-flex;color:#7a818c;cursor:help;outline:0;border-radius:50%;padding:3px}
+.pop:hover,.pop:focus{color:var(--primary);background:var(--active)}
+.pop .ti{font-size:17px}
+.pop-b{position:absolute;left:-12px;top:calc(100% + 8px);width:320px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 28px rgba(20,30,60,.14);padding:14px 16px;display:none;z-index:30;text-align:left;cursor:default;flex-direction:column;gap:6px}
+.pop:hover .pop-b,.pop:focus .pop-b{display:flex}
+.pop-b b{font-size:14.5px;color:#1f2329;font-weight:600}
+.pop-b span{font-size:13.5px;color:#4a515c;line-height:1.5;font-weight:400}
+.pop-b .pop-pie{display:flex;align-items:center;gap:6px;border-top:1px solid var(--line);padding-top:10px;margin-top:4px;color:#7a818c}
+.pop-b .pop-pie .ti{font-size:15px}
 </style>
 </head>
 <body>
@@ -386,7 +432,7 @@ h1{font-size:22px;font-weight:600;margin:4px 0 22px}
 
     <!-- Lista de horarios -->
     <section class="view" id="v-lista">
-      <p class="v-sub">Se listan las configuraciones de disponibilidad horaria por contrato y cuántos colaboradores tiene asignados cada una.</p>
+      <p class="v-sub">Se listan las configuraciones de disponibilidad horaria por contrato.</p>
       <div class="bar">
         <label class="search"><i class="ti ti-search"></i><input id="qLista" placeholder="Buscar"></label>
         <div class="dd-wrap">
@@ -429,26 +475,18 @@ h1{font-size:22px;font-weight:600;margin:4px 0 22px}
         <button class="link" id="resetBtn"><i class="ti ti-refresh"></i>Restablecer valores predeterminados</button>
       </div>
 
-      <div class="sec acc" id="sec-reg">
-        <button class="sec-h acc-h" aria-expanded="false"><span class="sec-ic"><i class="ti ti-scale"></i></span><div>
-          <h3>Regulaciones laborales por país</h3>
-          <p class="bj">Una regla encendida genera un conflicto en la grilla si no se cumple, y el motor de programación nunca la incumple.</p>
-        </div><i class="ti ti-chevron-down acc-ch"></i></button>
-        <div class="acc-b"><div id="regPaises"></div></div>
+      <div class="sec acc rg" id="sec-reg">
+        <div class="rg-h acc-h" role="button" tabindex="0" aria-expanded="false"><span class="sec-ic"><i class="ti ti-scale"></i></span>
+          <div class="rg-tt"><div class="rg-t1"><h3>Regulaciones laborales</h3><span id="regPais"></span></div><p class="bj">Límites legales que se validan al planificar turnos.</p></div>
+          <span class="rg-cnt" id="regCnt"></span><i class="ti ti-chevron-down acc-ch"></i></div>
+        <div class="acc-b"><div class="rg-tab" id="regPaises"></div></div>
       </div>
 
-      <div class="sec acc" id="sec-motor">
-        <button class="sec-h acc-h" aria-expanded="false"><span class="sec-ic"><i class="ti ti-sparkles"></i></span><div>
-          <h3>Motor de programación automática</h3>
-          <p class="bj">Se usa al tocar Programar: descarta a quien no puede tomar el turno y elige entre el resto según el impacto de cada criterio.</p>
-        </div><i class="ti ti-chevron-down acc-ch"></i></button>
-        <div class="acc-b">
-        <div class="sub-h">Restricciones</div>
-        <div id="motorRestr"></div>
-        <div class="sub-h">Criterios de elección</div>
-        <div id="motorPrefs"></div>
-        <div class="note"><i class="ti ti-info-circle"></i><div>Un criterio con impacto Alto pesa tres veces más que uno con impacto Bajo. En OFF el criterio no se tiene en cuenta.</div></div>
-        </div>
+      <div class="sec acc rg" id="sec-motor">
+        <div class="rg-h acc-h" role="button" tabindex="0" aria-expanded="false"><span class="sec-ic"><i class="ti ti-sparkles"></i></span>
+          <div class="rg-tt"><div class="rg-t1"><h3>Motor de programación automática</h3></div><p class="bj">Criterios para elegir entre las personas que pueden tomar cada turno al usar Programar.</p></div>
+          <span class="rg-cnt" id="motorCnt"></span><i class="ti ti-chevron-down acc-ch"></i></div>
+        <div class="acc-b"><div class="rg-tab" id="motorPrefs"></div><div class="rg-pie" id="motorRestr"></div></div>
       </div>
     </section>
   </main>
@@ -506,14 +544,12 @@ function renderLista(){
   const filas = HORARIOS.filter(h => !q || h.nombre.toLowerCase().includes(q));
   $('tablaHorarios').innerHTML = `<div class="trow head"><div>Nombre</div>${DIAS_TABLA.map(d=>`<div>${d}</div>`).join('')}<div class="tot">Total semanal</div><div></div></div>` +
     filas.map(h => {
-      const n = COLABORADORES.filter(c=>c.horario===h.id).length;
       const tot = h.dias.reduce((a,k)=>a+(TURNOS[k]?TURNOS[k].horas:0),0);
-      return `<div class="trow"><div><div class="nm">${h.nombre}</div><div class="asig">${n} colaboradores asignados</div></div>${h.dias.map(k => `<div>${k==='D' ? '<span class="chip-h off">Día de descanso</span>' : `<span class="chip-h">${rangoTurno(k)}</span>`}</div>`).join('')}<div class="tot">${tot} h</div>
+      return `<div class="trow"><div><div class="nm">${h.nombre}</div></div>${h.dias.map(k => `<div>${k==='D' ? '<span class="chip-h off">Día de descanso</span>' : `<span class="chip-h">${rangoTurno(k)}</span>`}</div>`).join('')}<div class="tot">${tot} h</div>
         <div class="dd-wrap"><button class="kebab" aria-label="Acciones"><i class="ti ti-dots-vertical"></i></button>
           <div class="menu">
             <button data-x><span class="mi"><i class="ti ti-user-cog"></i></span><span><div class="mt">Asignaciones</div><div class="md">Realiza asignaciones de horario a tus colaboradores.</div></span></button>
             <button data-x><span class="mi"><i class="ti ti-edit"></i></span><span><div class="mt">Editar</div><div class="md">Modifica o revisa el horario laboral.</div></span></button>
-            <button data-x><span class="mi"><i class="ti ti-file-text"></i></span><span><div class="mt">Ver contrato en Documentos</div><div class="md">Abre el contrato que respalda esta disponibilidad.</div></span></button>
             <button data-x><span class="mi"><i class="ti ti-trash"></i></span><span><div class="mt">Eliminar</div><div class="md">Elimina de forma definitiva el horario laboral.</div></span></button>
           </div></div></div>`;
     }).join('') + (filas.length ? '' : `<div style="padding:28px;text-align:center;color:var(--muted)">No hay horarios para mostrar.</div>`);
@@ -568,10 +604,10 @@ function renderCal(){
 /* Valores de la ley argentina. Se pueden endurecer pero nunca flexibilizar:
    un tope (límite 'max') solo puede bajar y un descanso (límite 'min') solo puede subir. */
 const REG_DEF = [
-  {id:'topeDiario',            titulo:'Máximo de horas diario',    desc:'Horas que una persona puede trabajar como máximo en un mismo día.', tipo:'diario',  valor:8, fuente:'Ley 11.544 de jornada de trabajo', limite:'max'},
-  {id:'topeSemanal',           titulo:'Máximo de horas semanal',   desc:'Horas que una persona puede trabajar como máximo en la semana.', tipo:'semana',  valor:48, fuente:'Ley 11.544 de jornada de trabajo', limite:'max'},
-  {id:'descansoEntreJornadas', titulo:'Descanso entre jornadas',   desc:'Horas corridas mínimas entre el fin de una jornada y el inicio de la siguiente.', tipo:'entre', valor:12, fuente:'Ley de Contrato de Trabajo, art. 197', limite:'min'},
-  {id:'descansoSemanal',       titulo:'Descanso semanal',          desc:'Horas corridas mínimas de descanso dentro de la semana, en cualquier día (franco rotativo).', tipo:'semanal', valor:35, fuente:'Ley de Contrato de Trabajo, art. 204', limite:'min'},
+  {id:'topeDiario', corto:'Máximo diario', unidad:'h / día', sevDef:'A',            titulo:'Máximo de horas diario',    desc:'Horas que una persona puede trabajar como máximo en un mismo día.', tipo:'diario',  valor:8, fuente:'Ley 11.544 de jornada de trabajo', limite:'max'},
+  {id:'topeSemanal', corto:'Máximo semanal', unidad:'h / sem', sevDef:'A',           titulo:'Máximo de horas semanal',   desc:'Horas que una persona puede trabajar como máximo en la semana.', tipo:'semana',  valor:48, fuente:'Ley 11.544 de jornada de trabajo', limite:'max'},
+  {id:'descansoEntreJornadas', corto:'Descanso entre jornadas', unidad:'h mín.', sevDef:'B', titulo:'Descanso entre jornadas',   desc:'Horas corridas mínimas entre el fin de una jornada y el inicio de la siguiente.', tipo:'entre', valor:12, fuente:'Ley de Contrato de Trabajo, art. 197', limite:'min'},
+  {id:'descansoSemanal', corto:'Descanso semanal', unidad:'h mín.', sevDef:'B',       titulo:'Descanso semanal',          desc:'Horas corridas mínimas de descanso dentro de la semana, en cualquier día (franco rotativo).', tipo:'semanal', valor:35, fuente:'Ley de Contrato de Trabajo, art. 204', limite:'min'},
 ];
 const dentroDeLey = (r, v) => { v = Math.round(Number(v)); if(!isFinite(v) || v < 1) v = r.valor; return r.limite === 'max' ? Math.min(v, r.valor) : Math.max(v, r.valor); };
 const textoLey = r => `${r.limite==='max'?'Máximo legal':'Mínimo legal'}: ${r.valor} h`;
@@ -586,7 +622,7 @@ const PREF_DEF = { historial:'ALTO', regularidad:'MEDIO', equidad:'BAJO' };
 
 function defaults(){
   const regulacion = {};
-  PAISES.forEach(p => { regulacion[p] = {}; REG_DEF.forEach(r => regulacion[p][r.id] = {on:true, valor:r.valor}); });
+  PAISES.forEach(p => { regulacion[p] = {}; REG_DEF.forEach(r => regulacion[p][r.id] = {on:true, valor:r.valor, sev:r.sevDef}); });
   return { regulacion, motor:{...PREF_DEF} };
 }
 function merge(base, extra){
@@ -607,32 +643,38 @@ function stepper(val, data, dis, unidad, r){
 }
 function sw(checked, data, label){ return `<label class="sw" title="${label}"><input type="checkbox" ${checked?'checked':''} ${data} aria-label="${label}"><span></span></label>`; }
 
+const PREF_ULTIMO = {}; // último peso elegido de cada criterio, para recuperarlo al volver a activarlo
+const info = (titulo, texto, pie) => `<span class="pop" tabindex="0" aria-label="${titulo}"><i class="ti ti-info-circle"></i><span class="pop-b"><b>${titulo}</b><span>${texto}</span>${pie ? `<span class="pop-pie">${pie}</span>` : ''}</span></span>`;
 function renderRegulaciones(){
-  $('regPaises').innerHTML = PAISES.map(p => {
-    const sedes = Object.keys(SEDE_PAIS).filter(s=>SEDE_PAIS[s]===p);
-    return `<div class="pais"><i class="ti ti-world" style="font-size:18px"></i><b>${p}</b><span>· ${sedes.length} sedes: ${sedes.join(', ')}</span><span class="tip" tabindex="0" aria-label="Se muestran solo los países donde la empresa tiene sedes"><i class="ti ti-info-circle"></i><span class="tip-b">Se muestran solo los países donde la empresa tiene sedes</span></span></div>` +
-      REG_DEF.map(r => { const v = cfg.regulacion[p][r.id], sev = Motor.TIPOS[r.tipo].sev;
-        return `<div class="rule ${v.on?'':'disabled'}"><div class="tx"><div class="tt">${r.titulo}<span class="sev ${sev}">${sev==='B'?'Bloqueante':'Advertencia'}</span></div><div class="ds">${r.desc}</div><div class="src"><i class="ti ti-scale"></i>${r.fuente}</div></div>
-          ${stepper(v.valor, `data-reg="${p}|${r.id}"`, !v.on, 'h', r)}
-          ${sw(v.on, `data-reg-on="${p}|${r.id}"`, r.titulo)}</div>`; }).join('');
-  }).join('');
+  const p = PAISES[0], sedes = Object.keys(SEDE_PAIS).filter(s=>SEDE_PAIS[s]===p);
+  $('regPais').innerHTML = `<span class="rg-dot">·</span><i class="ti ti-world"></i><b>${p}</b><span class="rg-dot">·</span><span>${sedes.length} sedes</span>` +
+    info(`Sedes alcanzadas: ${sedes.join(', ')}`, 'Se muestran solo los países donde la empresa tiene sedes. Las reglas activas generan alertas o bloquean la publicación en la grilla, y el motor automático nunca las incumple.');
+  const activas = REG_DEF.filter(r => cfg.regulacion[p][r.id].on).length;
+  $('regCnt').textContent = `${activas}/${REG_DEF.length} activas`;
+  $('regPaises').innerHTML = `<div class="rg-row head reg"><div>Regla</div><div>Comportamiento</div><div class="c">Límite</div><div class="c">Activa</div></div>` +
+    REG_DEF.map(r => { const v = cfg.regulacion[p][r.id], sev = v.sev || r.sevDef;
+      return `<div class="rg-row reg ${v.on?'':'off'}"><div class="rg-n">${r.corto}${info(r.titulo, r.desc, `<i class="ti ti-scale"></i>${r.fuente}`)}</div>
+        <div><div class="sg" role="radiogroup" aria-label="Comportamiento de ${r.corto}">${[['A','Advertencia'],['B','Bloqueante']].map(([k,l]) => `<button role="radio" aria-checked="${sev===k}" class="${sev===k?'on '+k:''}" data-sev="${p}|${r.id}" data-v="${k}" ${v.on?'':'disabled'}>${l}</button>`).join('')}</div></div>
+        <div class="c">${stepper(v.valor, `data-reg="${p}|${r.id}"`, !v.on, r.unidad, r)}</div>
+        <div class="c">${sw(v.on, `data-reg-on="${p}|${r.id}"`, r.corto)}</div></div>`; }).join('');
 }
 function renderMotor(){
-  const activas = PAISES.flatMap(p => REG_DEF.filter(r => cfg.regulacion[p][r.id].on).map(r => `${r.titulo.toLowerCase()} (${textoRegla(r, cfg.regulacion[p][r.id].valor)})`));
-  const regRow = `<div class="rule ${activas.length?'':'disabled'}"><div class="tx"><div class="tt">Regulación laboral</div><div class="ds">${activas.length ? 'Respeta las regulaciones encendidas: ' + activas.join(', ') + '.' : 'No hay regulaciones encendidas, así que el motor no valida descansos ni máximos de horas.'}</div></div><button class="link" id="verReg">${activas.length} de ${REG_DEF.length * PAISES.length} encendidas</button></div>`;
-  $('motorRestr').innerHTML = [
-    ['Cobertura requerida por turno, rol y sede','Solo genera los turnos que pide la vista de cobertura aplicada en cada sede y semana.'],
-    ['Ausencias, vacaciones y licencias aprobadas','Nunca asigna turnos a una persona durante su time off.'],
-    ['Rol y capacidad semanal','Solo asigna a personas con el rol pedido y sin superar su capacidad horaria.'],
-  ].map(([t,d]) => `<div class="rule"><div class="tx"><div class="tt">${t}</div><div class="ds">${d}</div></div><span class="locked"><i class="ti ti-lock"></i>Siempre activa</span></div>`).join('') + regRow;
-  $('motorPrefs').innerHTML = Object.keys(PREF_DEF).map(id => `<div class="rule ${cfg.motor[id]==='OFF'?'disabled':''}"><div class="tx"><div class="tt">${PREF_TITULO[id]}</div><div class="ds">${PREF_DESC[id]}</div></div>
-    <div class="seg" role="radiogroup" aria-label="Impacto de ${PREF_TITULO[id]}">${['ALTO','MEDIO','BAJO','OFF'].map(v => `<button role="radio" aria-checked="${cfg.motor[id]===v}" class="${cfg.motor[id]===v?'on':''} ${v==='OFF'?'off':''}" data-pref="${id}" data-v="${v}">${v==='OFF'?'OFF':v[0]+v.slice(1).toLowerCase()}</button>`).join('')}</div></div>`).join('');
+  const ids = Object.keys(PREF_DEF), activos = ids.filter(id => cfg.motor[id] !== 'OFF').length;
+  $('motorCnt').textContent = `${activos}/${ids.length} activos`;
+  $('motorPrefs').innerHTML = `<div class="rg-row head mot"><div>Criterio</div><div>Peso en la decisión</div><div class="c">Activo</div></div>` +
+    ids.map(id => { const v = cfg.motor[id], on = v !== 'OFF';
+      return `<div class="rg-row mot ${on?'':'off'}"><div class="rg-n">${PREF_TITULO[id]}${info(PREF_TITULO[id], PREF_DESC[id])}</div>
+        <div><div class="sg" role="radiogroup" aria-label="Peso de ${PREF_TITULO[id]}">${[['BAJO','Baja'],['MEDIO','Media'],['ALTO','Alta']].map(([k,l]) => `<button role="radio" aria-checked="${v===k}" class="${v===k?'on':''}" data-pref="${id}" data-v="${k}" ${on?'':'disabled'}>${l}</button>`).join('')}</div></div>
+        <div class="c">${sw(on, `data-pref-on="${id}"`, PREF_TITULO[id])}</div></div>`; }).join('');
+  const reg = PAISES.flatMap(p => REG_DEF.filter(r => cfg.regulacion[p][r.id].on)).length;
+  $('motorRestr').innerHTML = `<i class="ti ti-lock"></i><span>Siempre se respetan la cobertura de cada semana, las licencias aprobadas, el rol y la capacidad de cada persona, y las ${reg} regulaciones activas. Un criterio con peso Alta pesa tres veces más que uno con peso Baja.</span>`;
 }
 function renderReglas(){ renderRegulaciones(); renderMotor(); marcar(); }
 
 /* Eventos de Reglas */
 $('v-reglas').addEventListener('click', e => {
   const p = e.target.closest('[data-pref]'); if(p){ cfg.motor[p.dataset.pref] = p.dataset.v; renderMotor(); marcar(); return; }
+  const sv = e.target.closest('[data-sev]'); if(sv){ const [pa,id] = sv.dataset.sev.split('|'); cfg.regulacion[pa][id].sev = sv.dataset.v; renderRegulaciones(); marcar(); return; }
   const st = e.target.closest('[data-step]');
   if(st){
     const inp = st.parentElement.querySelector('input'); inp.value = Math.max(0, Number(inp.value||0) + Number(st.dataset.step));
@@ -647,6 +689,7 @@ $('v-reglas').addEventListener('change', e => {
     cfg.regulacion[p][id].valor = v; renderRegulaciones(); renderMotor();
   }
   else if(el.dataset.regOn){ const [p,id] = el.dataset.regOn.split('|'); cfg.regulacion[p][id].on = el.checked; renderRegulaciones(); renderMotor(); }
+  else if(el.dataset.prefOn){ const id = el.dataset.prefOn; if(el.checked){ cfg.motor[id] = PREF_ULTIMO[id] || PREF_DEF[id]; } else { PREF_ULTIMO[id] = cfg.motor[id]; cfg.motor[id] = 'OFF'; } renderMotor(); }
   marcar();
 });
 $('saveBtn').onclick = () => {
@@ -675,9 +718,12 @@ window.addEventListener('focus', refrescarPublicados);
 
 /* Secciones desplegables de Reglas */
 $('v-reglas').addEventListener('click', e => {
+  if(e.target.closest('.pop')) return;
   const h = e.target.closest('.acc-h'); if(h){ const sec = h.closest('.acc'); sec.classList.toggle('open'); h.setAttribute('aria-expanded', sec.classList.contains('open')); return; }
   if(e.target.closest('#verReg')){ const sec = $('sec-reg'); sec.classList.add('open'); sec.querySelector('.acc-h').setAttribute('aria-expanded','true'); sec.scrollIntoView({behavior:'smooth', block:'start'}); }
 });
+
+$('v-reglas').addEventListener('keydown', e => { const h = e.target.closest('.acc-h'); if(h && (e.key==='Enter' || e.key===' ') && e.target === h){ e.preventDefault(); h.click(); } });
 
 renderLista(); renderCal(); renderReglas(); abrirTab(tabInicial); hydrateIcons();
 </script>
