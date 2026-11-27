@@ -124,7 +124,7 @@ render = function () {
     }).join('');
     html += `<div class="emp"><div class="av"><i class="ti ti-user"></i></div><div class="emp-info">
       <div class="emp-name">${c.nombre}</div>
-      <div class="emp-role" title="${c.rol}">${c.rol}</div>
+      ${rolHTML(c)}
       <div class="emp-hours"><i class="ti ti-clock"></i>${fmtH(h)} en el mes</div>
     </div></div>` + celdas;
   }
@@ -712,4 +712,35 @@ function paintTurnoCeldas() {
 const _paintCeldas = paintDrawer;
 paintDrawer = function () { if (dr && dr.vista === 'turnoCeldas') { $('drFoot').className = 'dr-foot'; return paintTurnoCeldas(); } _paintCeldas(); };
 
-pintarFechas(); render();
+/* ---------- Coachmark: colaborador sin rol laboral ---------- */
+let coachRolEmp = null;
+function mostrarCoachRol(id) {
+  const chip = document.querySelector(`.emp-sinrol[data-e="${id}"]`); if (!chip) return;
+  coachRolEmp = id; const c = COLABORADORES[id];
+  $('coachRolTxt').textContent = `${c.nombre} no tiene un rol laboral asignado, así que la cobertura y Programar no lo tienen en cuenta. Asignale un puesto desde Admin > Usuarios > Trabajo.`;
+  document.querySelectorAll('.emp-sinrol.spot').forEach(x => x.classList.remove('spot'));
+  chip.classList.add('spot'); $('coachRol').classList.add('open'); ubicarCoachRol();
+}
+function ubicarCoachRol() {
+  if (!$('coachRol').classList.contains('open')) return;
+  const chip = document.querySelector(`.emp-sinrol[data-e="${coachRolEmp}"]`);
+  if (!chip) return cerrarCoachRol();
+  const b = chip.getBoundingClientRect(); $('coachRol').style.left = (b.left - 14) + 'px'; $('coachRol').style.top = (b.bottom + 12) + 'px';
+}
+function cerrarCoachRol() { $('coachRol').classList.remove('open'); document.querySelectorAll('.emp-sinrol.spot').forEach(x => x.classList.remove('spot')); coachRolEmp = null; }
+window.addEventListener('scroll', ubicarCoachRol, { passive: true }); window.addEventListener('resize', ubicarCoachRol);
+document.querySelector('.grid-scroll').addEventListener('scroll', ubicarCoachRol, { passive: true });
+$('coachRol').addEventListener('click', e => e.stopPropagation());
+$('coachRolNo').onclick = cerrarCoachRol;
+$('coachRolIr').onclick = () => { location.href = `admin.html#usuario/${coachRolEmp}/trabajo`; };
+$('grid').addEventListener('click', e => { const ch = e.target.closest('.emp-sinrol'); if (!ch) return; e.stopPropagation(); mostrarCoachRol(+ch.dataset.e); }, true);
+const _renderRol = render;
+render = function () { _renderRol(); if (coachRolEmp !== null) requestAnimationFrame(ubicarCoachRol); };
+// Al abrir la app se avisa una vez por sesión si alguien visible no tiene rol
+function avisoSinRol() {
+  const ch = document.querySelector('.emp-sinrol'); if (!ch) return;
+  let visto = false; try { visto = sessionStorage.getItem('luna:avisoRol') === '1'; sessionStorage.setItem('luna:avisoRol', '1'); } catch (e) {}
+  if (!visto) { ch.scrollIntoView({ block: 'center' }); mostrarCoachRol(+ch.dataset.e); }
+}
+
+pintarFechas(); render(); setTimeout(avisoSinRol, 300);

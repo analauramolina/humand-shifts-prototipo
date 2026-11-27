@@ -68,6 +68,37 @@ const COLABORADORES = DOTACION.flatMap(([sede,rol,nombres]) => nombres.map((nomb
  .sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'))
  .map((c,i)=>({...c, id:i, capacidad:CAPACIDAD, semana:[[],[],[],[],[],[],[]]}));
 
+/* ---------- Usuarios (Admin > Usuarios): datos del perfil e historial laboral ----------
+   El puesto actual del historial define el rol laboral y la sede que usan la app y el motor. */
+const sinAcentos = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '');
+const PERFILES = {};
+COLABORADORES.forEach(c => {
+  const [nombre, ...resto] = c.nombre.split(' '), apellido = resto.join(' ');
+  const contr = new Date(2021 + (c.id % 4), (c.id * 5) % 12, (c.id * 7) % 27 + 1);
+  const alta = contr < new Date(2024, 7, 1) ? new Date(2024, 7, 1 + (c.id % 9)) : contr; // la empresa empezó a usar Humand en agosto de 2024
+  const iso = f => `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`;
+  PERFILES[c.nombre] = { nombre, apellido, email: sinAcentos(`${nombre}.${apellido}`.toLowerCase()).replace(/\s+/g, '') + '@lunazapateria.com.ar', contratacion: iso(contr), creacion: iso(alta) };
+});
+const SIN_PUESTO = ['Milagros Cabrera'];
+const CLAVE_PUESTOS = 'puestos.v2';
+const HISTORIAL_LABORAL = (() => {
+  const h = {};
+  COLABORADORES.forEach(c => {
+    const jefe = c.rol === 'Encargado de sucursal' ? '' : (COLABORADORES.find(x => x.sede === c.sede && x.rol === 'Encargado de sucursal') || {}).nombre || '';
+    // Milagros Cabrera ingresa sin puesto cargado: su rol laboral se asigna desde Admin > Usuarios > Trabajo
+    h[c.nombre] = SIN_PUESTO.includes(c.nombre) ? [] : [{ puesto: c.rol, inicio: PERFILES[c.nombre].contratacion, fin: '', depto: `Sede ${c.sede}`, jefe, aprob: '' }];
+  });
+  const g = Store.get(CLAVE_PUESTOS, null);
+  if (g) Object.keys(g).forEach(n => { if (h[n]) h[n] = g[n]; });
+  return h;
+})();
+/* Puesto actual: el que no tiene fecha de fin; si hay varios, el de inicio más reciente */
+const puestoActual = n => (HISTORIAL_LABORAL[n] || []).filter(p => !p.fin).sort((a, b) => b.inicio.localeCompare(a.inicio))[0] || null;
+function aplicarPuestos() {
+  COLABORADORES.forEach(c => { const p = puestoActual(c.nombre); if (!p) { c.rol = ''; return; } c.rol = ROLES.includes(p.puesto) ? p.puesto : ''; const s = p.depto.replace('Sede ', ''); if (SEDE_PAIS[s]) c.sede = s; });
+}
+aplicarPuestos();
+
 /* Time off aprobado para la semana (días 0 = lunes ... 6 = domingo) */
 const LICENCIAS = {
   'Tomás Herrera':   {tipo:'Vacaciones',      dias:[0,1,2]},

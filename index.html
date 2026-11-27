@@ -577,6 +577,12 @@ body.full .card{border:0;border-radius:0}
 .shift.cf-lic{border-color:#f1c6c6;background:#fff}
 .shift.cf-lic .t,.shift.cf-lic .h{color:#7a1f1f}
 .shift.cf-lic .cf-ic{color:#7a1f1f;font-size:22px}
+
+/* Colaborador sin rol laboral */
+.emp-sinrol{display:inline-flex;align-items:center;gap:4px;margin-top:3px;background:#fff6e5;border:1px solid #f3cf8a;color:#8a5300;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:600;cursor:pointer}
+.emp-sinrol .ti{font-size:14px}
+.coach .btn-ghost{background:none;border:0;color:var(--navy);font-weight:600;font-size:14px;padding:0 10px}
+.emp-sinrol.spot{box-shadow:0 0 0 3px rgba(217,138,0,.25)}
 </style>
 </head>
 <body>
@@ -656,6 +662,7 @@ body.full .card{border:0;border-radius:0}
   <button data-v="descanso"><span class="ic"><i class="ti ti-bed"></i></span>Asignar descanso</button>
   <button data-v="plantilla"><span class="ic"><i class="ti ti-template"></i></span>Asignar plantilla</button>
 </div>
+<div class="coach" id="coachRol"><div class="t">Falta el rol laboral</div><div class="d" id="coachRolTxt"></div><div class="a" style="gap:8px"><button class="btn-ghost" id="coachRolNo" style="flex:none;height:34px">Entendido</button><button class="btn-primary" id="coachRolIr">Ir al Admin</button></div></div>
 <div class="coach" id="coach"><div class="t">Seleccioná una sede</div><div class="d" id="coachTxt"></div><div class="a"><button class="btn-primary" id="coachOk">Entendido</button></div></div>
 <div class="overlay" id="overlay"></div>
 <aside class="drawer" id="drawer">
@@ -696,6 +703,7 @@ const pad = n => String(n).padStart(2,'0');
 const hNum = t => { const [h,m]=t.split(':').map(Number); return h + m/60; };
 const turnosDia = (c,d) => c.semana[d].filter(k => TURNOS[k]);
 const horasDia = (c,d) => turnosDia(c,d).reduce((a,k)=>a+TURNOS[k].horas,0);
+const rolHTML = c => c.rol ? `<div class="emp-role" title="${c.rol}">${c.rol}</div>` : `<button class="emp-sinrol" data-e="${c.id}"><i class="ti ti-alert-circle"></i>Sin rol laboral</button>`;
 const horasAsignadas = c => c.semana.reduce((s,_,d)=> s + horasDia(c,d), 0);
 /* Horas por planificar = horas de contrato - ausencias aprobadas - festivos (8 h por día) */
 const HORAS_DIA = 8;
@@ -755,7 +763,7 @@ function render(){
     const h = horasAsignadas(c);
     html += `<div class="emp">${ckBox('e'+c.id)}<div class="av"><i class="ti ti-user"></i></div><div class="emp-info">
       <div class="emp-name">${c.nombre}</div>
-      <div class="emp-role" title="${c.rol}">${c.rol}</div>
+      ${rolHTML(c)}
       <div class="emp-hours ${h>porPlanificar(c)?'over':''}"><i class="ti ti-clock"></i><u class="hrs" data-t="p" data-e="${c.id}">${fmtH(h)}</u> / <u class="hrs" data-t="c" data-e="${c.id}">${fmtH(porPlanificar(c))}</u></div>
     </div></div>`;
     c.semana.forEach((items,i)=>{
@@ -1023,17 +1031,18 @@ const COACH_TXT = {
 };
 function showCoach(motivo='cobertura'){
   $('coachTxt').textContent = COACH_TXT[motivo];
-  const b=$('sedesBtn').getBoundingClientRect(), c=$('coach');
-  c.style.left=(b.left-14)+'px'; c.style.top=(b.bottom+12)+'px'; c.classList.add('open');
-  $('sedesBtn').classList.add('spot');
+  $('coach').classList.add('open'); $('sedesBtn').classList.add('spot'); ubicarCoach();
 }
+/* El coachmark sigue al botón Sedes mientras la página termina de desplazarse */
+function ubicarCoach(){ const c=$('coach'); if(!c.classList.contains('open')) return; const b=$('sedesBtn').getBoundingClientRect(); c.style.left=(b.left-14)+'px'; c.style.top=(b.bottom+12)+'px'; }
+window.addEventListener('scroll', ubicarCoach, {passive:true}); window.addEventListener('resize', ubicarCoach);
 function hideCoach(){ $('coach').classList.remove('open'); $('sedesBtn').classList.remove('spot'); }
 $('coach').addEventListener('click', e=>e.stopPropagation());
 $('coachOk').onclick = hideCoach;
 $('grid').addEventListener('click', e => {
   if(e.target.closest('#covToggle')){
     e.stopPropagation();
-    if(!sedeSel){ window.scrollTo({top:0,behavior:'smooth'}); setTimeout(showCoach, 250); return; }
+    if(!sedeSel){ window.scrollTo({top:0,behavior:'smooth'}); showCoach(); return; }
     if(!coberturaDe(sedeSel).length){ toast(`La vista de cobertura aplicada en ${sedeSel} no requiere personal`, 'warn'); return; }
     covOpen=!covOpen; render(); return;
   }
@@ -1266,7 +1275,7 @@ $('cmBg').addEventListener('keydown', e => { const card = e.target.closest && e.
 let deshacer = null;
 $('progBtn').onclick = e => {
   e.stopPropagation(); closePop();
-  if(!sedeSel){ window.scrollTo({top:0,behavior:'smooth'}); setTimeout(()=>showCoach('programar'), 250); return; }
+  if(!sedeSel){ window.scrollTo({top:0,behavior:'smooth'}); showCoach('programar'); return; }
   if(!coberturaDe(sedeSel).length){ toast(`La vista de cobertura aplicada en ${sedeSel} no requiere personal`, 'warn'); return; }
   modal('Programar turnos',
     `Se generará un borrador de la semana del ${rangoCorto()} para <b>${sedeSel}</b>, que cubre la cobertura requerida y respeta las regulaciones y las licencias aprobadas. Vas a poder ajustarlo antes de publicar.
