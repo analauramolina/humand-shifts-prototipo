@@ -175,7 +175,7 @@ const ENCARGADOS = () => COLABORADORES.filter(x => x.rol === 'Encargado de sucur
 function abrirPuesto(i) {
   const c = COLABORADORES[PID], h = HISTORIAL_LABORAL[c.nombre] || (HISTORIAL_LABORAL[c.nombre] = []);
   const act = puestoActual(c.nombre);
-  const x = i !== null ? h[i] : { puesto: '', inicio: '', fin: '', depto: act ? act.depto : 'Atención al público', jefe: act ? act.jefe : '', aprob: act ? act.aprob : '' };
+  const x = i !== null ? h[i] : { puesto: '', inicio: '2026-11-30', fin: '', depto: act ? act.depto : 'Atención al público', jefe: act ? act.jefe : '', aprob: act ? act.aprob : '' };
   const sel = (id, opts, v, vacio) => `<select class="u-field" id="${id}">${vacio ? `<option value="">${vacio}</option>` : ''}${opts.map(o => `<option ${o === v ? 'selected' : ''}>${escU(o)}</option>`).join('')}</select>`;
   const personas = ENCARGADOS().filter(p => p.nombre !== c.nombre).map(p => p.nombre);
   $('shTit').textContent = i !== null ? 'Editar puesto' : 'Agregar puesto';

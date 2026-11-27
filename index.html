@@ -1416,7 +1416,9 @@ window.addEventListener('pageshow', e => { if(e.persisted) refrescarReglas(); })
 window.addEventListener('focus', refrescarReglas);
 /* Si se cambió un puesto en Admin > Usuarios, la app toma el nuevo rol al volver */
 function refrescarPuestos(){ recargarPuestos(); render(); }
-window.addEventListener('pageshow', e => { if(e.persisted) refrescarPuestos(); });
+/* Si el navegador devuelve la página desde su caché (botón Atrás), se recarga para tomar el código y los datos vigentes.
+   El borrador se conserva porque se guarda al salir de la página. */
+window.addEventListener('pageshow', e => { if(e.persisted) location.reload(); });
 window.addEventListener('focus', refrescarPuestos);
 window.addEventListener('storage', e => { if(!e.key || e.key.includes('puestos')) refrescarPuestos(); });
 window.addEventListener('storage', e => { if(!e.key || e.key === 'luna:reglas') refrescarReglas(); });
