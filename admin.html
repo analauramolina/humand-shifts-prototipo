@@ -399,6 +399,26 @@ h1{font-size:22px;font-weight:600;margin:4px 0 22px}
 .pop-b span{font-size:13.5px;color:#4a515c;line-height:1.5;font-weight:400}
 .pop-b .pop-pie{display:flex;align-items:center;gap:6px;border-top:1px solid var(--line);padding-top:10px;margin-top:4px;color:#7a818c}
 .pop-b .pop-pie .ti{font-size:15px}
+
+/* Peso en la decisión: escala de azules de menor a mayor intensidad */
+.rg-row.head .ph{display:flex;align-items:center;gap:6px}
+.sg.peso button{display:inline-flex;align-items:center;gap:7px}
+.sg.peso .bars{display:inline-flex;align-items:flex-end;gap:2px;height:12px}
+.sg.peso .bars i{width:3px;border-radius:1px;background:#c9cfdc}
+.sg.peso .bars i:nth-child(1){height:5px}.sg.peso .bars i:nth-child(2){height:8px}.sg.peso .bars i:nth-child(3){height:12px}
+.sg.peso button.on.BAJO{background:#e6ecfd;border-color:#c6d2f7;color:#2f4bbf}
+.sg.peso button.on.MEDIO{background:#9fb4f2;border-color:#8aa3ee;color:#132a7a}
+.sg.peso button.on.ALTO{background:#3b5bdb;border-color:#3b5bdb;color:#fff}
+.sg.peso button.on.BAJO .bars i:nth-child(1){background:#2f4bbf}
+.sg.peso button.on.MEDIO .bars i:nth-child(-n+2){background:#132a7a}
+.sg.peso button.on.ALTO .bars i{background:#fff}
+/* Banner de restricciones */
+.rg-siempre{margin:0 24px 16px;background:#f0f4ff;border:1px solid #d6e0fb;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.rs-t{display:flex;align-items:center;gap:7px;font-weight:600;font-size:14px;color:var(--navy)}
+.rs-t .ti{font-size:16px}
+.rs-l{display:flex;flex-wrap:wrap;gap:8px 18px}
+.rs-l span{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:#2b3038}
+.rs-l .ti{font-size:13px;color:#fff;background:#2e9e5b;border-radius:50%;width:18px;height:18px;display:inline-grid;place-items:center;padding:2px}
 </style>
 </head>
 <body>
@@ -484,9 +504,9 @@ h1{font-size:22px;font-weight:600;margin:4px 0 22px}
 
       <div class="sec acc rg" id="sec-motor">
         <div class="rg-h acc-h" role="button" tabindex="0" aria-expanded="false"><span class="sec-ic"><i class="ti ti-sparkles"></i></span>
-          <div class="rg-tt"><div class="rg-t1"><h3>Motor de programación automática</h3></div><p class="bj">Criterios para elegir entre las personas que pueden tomar cada turno al usar Programar.</p></div>
+          <div class="rg-tt"><div class="rg-t1"><h3>Motor de programación automática</h3></div><p class="bj">Definí qué criterios pesan al asignar turnos en Programación automática.</p></div>
           <span class="rg-cnt" id="motorCnt"></span><i class="ti ti-chevron-down acc-ch"></i></div>
-        <div class="acc-b"><div class="rg-tab" id="motorPrefs"></div><div class="rg-pie" id="motorRestr"></div></div>
+        <div class="acc-b"><div class="rg-siempre" id="motorRestr"></div><div class="rg-tab" id="motorPrefs"></div></div>
       </div>
     </section>
   </main>
@@ -661,13 +681,13 @@ function renderRegulaciones(){
 function renderMotor(){
   const ids = Object.keys(PREF_DEF), activos = ids.filter(id => cfg.motor[id] !== 'OFF').length;
   $('motorCnt').textContent = `${activos}/${ids.length} activos`;
-  $('motorPrefs').innerHTML = `<div class="rg-row head mot"><div>Criterio</div><div>Peso en la decisión</div><div class="c">Activo</div></div>` +
+  $('motorPrefs').innerHTML = `<div class="rg-row head mot"><div>Criterio</div><div class="ph">Peso en la decisión${info('Peso en la decisión', 'En la priorización, un criterio en Alta pesa 3 veces más que en Baja.')}</div><div class="c">Activo</div></div>` +
     ids.map(id => { const v = cfg.motor[id], on = v !== 'OFF';
       return `<div class="rg-row mot ${on?'':'off'}"><div class="rg-n">${PREF_TITULO[id]}${info(PREF_TITULO[id], PREF_DESC[id])}</div>
-        <div><div class="sg" role="radiogroup" aria-label="Peso de ${PREF_TITULO[id]}">${[['BAJO','Baja'],['MEDIO','Media'],['ALTO','Alta']].map(([k,l]) => `<button role="radio" aria-checked="${v===k}" class="${v===k?'on':''}" data-pref="${id}" data-v="${k}" ${on?'':'disabled'}>${l}</button>`).join('')}</div></div>
+        <div><div class="sg peso" role="radiogroup" aria-label="Peso de ${PREF_TITULO[id]}">${[['BAJO','Baja'],['MEDIO','Media'],['ALTO','Alta']].map(([k,l]) => `<button role="radio" aria-checked="${v===k}" class="${v===k?'on '+k:''}" data-pref="${id}" data-v="${k}" ${on?'':'disabled'}><span class="bars"><i></i><i></i><i></i></span>${l}</button>`).join('')}</div></div>
         <div class="c">${sw(on, `data-pref-on="${id}"`, PREF_TITULO[id])}</div></div>`; }).join('');
   const reg = PAISES.flatMap(p => REG_DEF.filter(r => cfg.regulacion[p][r.id].on)).length;
-  $('motorRestr').innerHTML = `<i class="ti ti-lock"></i><span>Siempre se respetan la cobertura de cada semana, las licencias aprobadas, el rol y la capacidad de cada persona, y las ${reg} regulaciones activas. Un criterio con peso Alta pesa tres veces más que uno con peso Baja.</span>`;
+  $('motorRestr').innerHTML = `<div class="rs-t"><i class="ti ti-lock"></i>Siempre se respetan</div><div class="rs-l">${['Cobertura semanal definida','Licencias aprobadas','Puesto de cada persona',`Regulaciones activas (${reg})`].map(t => `<span><i class="ti ti-check"></i>${t}</span>`).join('')}</div>`;
 }
 function renderReglas(){ renderRegulaciones(); renderMotor(); marcar(); }
 
