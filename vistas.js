@@ -123,7 +123,7 @@ render = function () {
   }
   actualizarConflictos();
   const q = $('q').value.trim().toLowerCase();
-  const lista = COLABORADORES.filter(c => (!sedeSel || c.sede === sedeSel) && (!q || c.nombre.toLowerCase().includes(q)));
+  const lista = COLABORADORES.filter(c => (!sedeSel || c.sede === sedeSel) && pasaFiltro(c) && (!q || c.nombre.toLowerCase().includes(q)));
   LISTA = lista;
   const n = new Date(MES.y, MES.m + 1, 0).getDate();
   const dias = Array.from({ length: n }, (_, i) => new Date(MES.y, MES.m, i + 1));
@@ -848,5 +848,32 @@ restaurarEstado();
 const _renderPuestos = render;
 render = function () { try { recargarPuestos(); } catch (e) {} _renderPuestos(); };
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
+
+/* ---------- Panel "Filtrar por": Colaboradores y Puesto ---------- */
+const PUESTOS_FILTRO = () => [...ROLES.map(r => [r, r]), ['sin', 'Sin rol laboral']];
+function pintarBotonFiltro() {
+  const n = FILTRO.emps.length + FILTRO.puestos.length;
+  $('filtrosBtn').classList.toggle('on', n > 0); $('filtrosN').textContent = n || '';
+}
+$('filtrosBtn').onclick = e => { e.stopPropagation(); closePopSilencioso(); openDrawer('filtros', 0, 0, true); };
+function paintFiltros() {
+  if (!dr.f) dr.f = { emps: [...FILTRO.emps], puestos: [...FILTRO.puestos] };
+  const f = dr.f, pool = COLABORADORES.filter(c => !sedeSel || c.sede === sedeSel);
+  $('drTitle').textContent = 'Filtrar por'; $('drBack').style.display = 'none';
+  const cuenta = p => pool.filter(c => (c.rol || 'sin') === p).length;
+  $('drBody').innerHTML = `<div class="box"><label>Colaboradores</label>${mselHTML('fColab', f.emps, pool)}</div>
+    <div class="f-acc open" id="fPuestoAcc"><button class="f-acc-h" type="button">Puesto${f.puestos.length ? ` (${f.puestos.length})` : ''}<i class="ti ti-chevron-down"></i></button>
+      <div class="f-acc-b">${PUESTOS_FILTRO().map(([v, l]) => `<label class="check"><input type="checkbox" data-puesto="${v}" ${f.puestos.includes(v) ? 'checked' : ''}><span>${l}<small>(${cuenta(v)})</small></span></label>`).join('')}</div></div>`;
+  $('drFoot').className = 'dr-foot dos';
+  $('drFoot').innerHTML = `<button class="link" id="fLimpiar">Limpiar selección</button><button class="btn-primary" id="fAplicar">Aplicar</button>`;
+  wireMsel('fColab', id => { f.emps.push(id); paintFiltros(); $('fColab').classList.add('open'); $('fColab').querySelector('.msel-q').focus(); },
+    id => { f.emps = f.emps.filter(x => x !== id); paintFiltros(); });
+  $('fPuestoAcc').querySelector('.f-acc-h').onclick = () => $('fPuestoAcc').classList.toggle('open');
+  $('drBody').querySelectorAll('[data-puesto]').forEach(cb => cb.onchange = () => { const v = cb.dataset.puesto; f.puestos = cb.checked ? [...f.puestos, v] : f.puestos.filter(x => x !== v); paintFiltros(); });
+  $('fLimpiar').onclick = () => { dr.f = { emps: [], puestos: [] }; paintFiltros(); };
+  $('fAplicar').onclick = () => { FILTRO = { emps: [...f.emps], puestos: [...f.puestos] }; closeDrawer(); pintarBotonFiltro(); const n = LISTA.length; toast(FILTRO.emps.length + FILTRO.puestos.length ? `Se muestran ${n} colaborador${n === 1 ? '' : 'es'} según los filtros` : 'Se quitaron los filtros'); };
+}
+const _paintFiltros = paintDrawer;
+paintDrawer = function () { if (dr && dr.vista === 'filtros') { $('drFoot').className = 'dr-foot'; return paintFiltros(); } _paintFiltros(); };
 
 pintarFechas(); render(); setTimeout(avisoSinRol, 300);

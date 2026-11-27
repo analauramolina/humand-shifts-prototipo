@@ -638,6 +638,20 @@ body.full .grid-scroll{max-height:calc(100vh - 150px)}
 .grid-scroll::-webkit-scrollbar{height:12px;width:12px}
 .grid-scroll::-webkit-scrollbar-thumb{background:#c3c7cf;border-radius:8px;border:3px solid #fff}
 .grid-scroll::-webkit-scrollbar-track{background:#f6f7f9}
+
+/* Filtros */
+#filtrosBtn{position:relative}
+#filtrosBtn.on{background:#eef2fd;border-color:var(--primary)}
+.f-badge{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;border-radius:999px;background:var(--primary);color:#fff;font-size:11px;font-weight:700;display:none;place-items:center;padding:0 5px}
+#filtrosBtn.on .f-badge{display:grid}
+.f-acc{border:1px solid var(--line);border-radius:12px;background:#fff;margin-bottom:16px;overflow:hidden}
+.f-acc-h{width:100%;display:flex;align-items:center;justify-content:space-between;background:none;border:0;padding:16px 18px;font:inherit;font-weight:600;font-size:16px;color:#1f2329;cursor:pointer}
+.f-acc-h .ti{font-size:20px;transition:transform .15s}
+.f-acc.open .f-acc-h .ti{transform:rotate(180deg)}
+.f-acc-b{display:none;padding:0 18px 14px}
+.f-acc.open .f-acc-b{display:block}
+.f-acc-b label.check{padding:8px 0}
+.f-acc-b label.check small{display:inline;margin-left:6px}
 </style>
 </head>
 <body>
@@ -689,7 +703,7 @@ body.full .grid-scroll{max-height:calc(100vh - 150px)}
             <div class="dd-list" id="ddList"></div>
             <div class="dd-foot"><button id="ddClear">Limpiar</button></div>
           </div></div>
-        <button class="tb-btn sq" aria-label="Filtros"><i class="ti ti-filter"></i></button>
+        <button class="tb-btn sq" id="filtrosBtn" aria-label="Filtros"><i class="ti ti-filter"></i><span class="f-badge" id="filtrosN"></span></button>
         <div class="gap-l" style="position:relative"><button class="tb-btn" id="modoBtn"><span id="modoLbl">Semanal</span> <i class="ti ti-chevron-down" id="modoChev"></i></button>
           <div class="dd-modo" id="modoDD"><button data-modo="semana"><span class="radio"></span>Semanal</button><button data-modo="mes"><span class="radio"></span>Mensual</button></div></div>
         <div class="date-nav">
@@ -811,7 +825,7 @@ function render(){
   actualizarConflictos();
   const q = $('q').value.trim().toLowerCase();
   const lista = COLABORADORES.filter(c =>
-    (!sedeSel || c.sede===sedeSel) &&
+    (!sedeSel || c.sede===sedeSel) && pasaFiltro(c) &&
     (!q || c.nombre.toLowerCase().includes(q) || c.semana.some(d => d.some(k => TURNOS[k] && TURNOS[k].nombre.toLowerCase().includes(q))))
   );
   LISTA = lista;
@@ -1145,6 +1159,9 @@ $('grid').addEventListener('drop', e => {
 
 
 /* ---------- Selección múltiple: copiar, pegar, eliminar ---------- */
+/* Filtros del panel "Filtrar por": colaboradores y puesto (vacío = sin filtrar) */
+let FILTRO = { emps: [], puestos: [] };
+const pasaFiltro = c => (!FILTRO.emps.length || FILTRO.emps.includes(c.id)) && (!FILTRO.puestos.length || FILTRO.puestos.includes(c.rol || 'sin'));
 let selMode = false, pasteMode = false, SEL = new Set(), CLIP = [], LISTA = [];
 let CELLS = new Set(); // celdas pintadas al seleccionar filas o columnas: "emp-día"
 function cellsScope(scope){
