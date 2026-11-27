@@ -29,7 +29,7 @@ document.addEventListener('input', e => {
 }, true);
 // Selector de colaboradores: los elegidos se ven como chips dentro del mismo cuadro
 const mselHTML = (id, sel, opciones) => `<div class="msel" id="${id}"><div class="msel-box">${sel.map(i => `<span class="chip">${esc(COLABORADORES[i].nombre)}<button type="button" data-quitar="${i}" aria-label="Quitar a ${esc(COLABORADORES[i].nombre)}"><i class="ti ti-x" style="font-size:12px"></i></button></span>`).join('')}<input class="msel-q" placeholder="${sel.length ? '' : 'Buscar'}" autocomplete="off" aria-label="Buscar colaborador"><i class="ti ti-chevron-down msel-ch"></i></div>
-  <div class="msel-dd">${opciones.filter(c => !sel.includes(c.id)).map(c => `<button type="button" data-add="${c.id}" data-n="${esc(c.nombre.toLowerCase())}">${esc(c.nombre)}<small>${esc(c.rol || 'Sin rol laboral')} · ${c.sede}</small></button>`).join('') || '<div class="msel-vacio">No hay más colaboradores para agregar.</div>'}</div></div>`;
+  <div class="msel-dd">${opciones.filter(c => !sel.includes(c.id)).map(c => `<button type="button" data-add="${c.id}" data-n="${esc(c.nombre.toLowerCase())}">${esc(c.nombre)}<small>${esc(c.rol || 'Sin puesto')} · ${c.sede}</small></button>`).join('') || '<div class="msel-vacio">No hay más colaboradores para agregar.</div>'}</div></div>`;
 function wireMsel(id, onAdd, onRemove) {
   const el = $(id), q = el.querySelector('.msel-q');
   el.querySelector('.msel-box').onclick = e => { if (e.target.closest('[data-quitar]')) return; el.classList.add('open'); q.focus(); };
@@ -735,7 +735,7 @@ let coachRolEmp = null;
 function mostrarCoachRol(id, texto) {
   const chip = document.querySelector(`.emp-sinrol[data-e="${id}"]`); if (!chip) return;
   coachRolEmp = id; const c = COLABORADORES[id];
-  $('coachRolTxt').textContent = texto || `${c.nombre} no tiene un rol laboral asignado, así que la cobertura y Programar no lo tienen en cuenta. Asignale un puesto desde Admin > Usuarios > Trabajo.`;
+  $('coachRolTxt').textContent = texto || `${c.nombre} no tiene un puesto asignado, así que la cobertura y Programar no lo tienen en cuenta. Asignale un puesto desde Admin > Usuarios > Trabajo.`;
   document.querySelectorAll('.emp-sinrol.spot').forEach(x => x.classList.remove('spot'));
   chip.classList.add('spot'); $('coachRol').classList.add('open'); ubicarCoachRol();
 }
@@ -795,7 +795,7 @@ $('grid').addEventListener('click', e => {
 function avisarSinRol(lista) {
   const ch = document.querySelector(`.emp-sinrol[data-e="${lista[0].id}"]`); if (ch) ch.scrollIntoView({ block: 'center' });
   const n = lista.length;
-  mostrarCoachRol(lista[0].id, `Antes de programar, asigná un rol laboral a ${n === 1 ? lista[0].nombre : `${n} colaboradores de ${sedeSel}`}. Sin rol, el motor no sabe qué turnos puede cubrir. Configuralo en Admin > Usuarios > Trabajo.`);
+  mostrarCoachRol(lista[0].id, `Antes de programar, asigná un puesto a ${n === 1 ? lista[0].nombre : `${n} colaboradores de ${sedeSel}`}. Sin puesto, el motor no sabe qué turnos puede cubrir. Configuralo en Admin > Usuarios > Trabajo.`);
 }
 // Validación 3: falta asignar una vista de cobertura
 function avisarSinCobertura() {
@@ -850,7 +850,7 @@ render = function () { try { recargarPuestos(); } catch (e) {} _renderPuestos();
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
 
 /* ---------- Panel "Filtrar por": Colaboradores y Puesto ---------- */
-const PUESTOS_FILTRO = () => [...ROLES.map(r => [r, r]), ['sin', 'Sin rol laboral']];
+const PUESTOS_FILTRO = () => [...ROLES.map(r => [r, r]), ['sin', 'Sin puesto']];
 function pintarBotonFiltro() {
   const n = FILTRO.emps.length + FILTRO.puestos.length;
   $('filtrosBtn').classList.toggle('on', n > 0); $('filtrosN').textContent = n || '';

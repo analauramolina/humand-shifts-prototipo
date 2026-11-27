@@ -734,7 +734,7 @@ body.full .card{border:0;border-radius:0}
   <button data-v="descanso"><span class="ic"><i class="ti ti-bed"></i></span>Asignar descanso</button>
   <button data-v="plantilla"><span class="ic"><i class="ti ti-template"></i></span>Asignar plantilla</button>
 </div>
-<div class="coach" id="coachRol"><div class="t">Falta el rol laboral</div><div class="d" id="coachRolTxt"></div><div class="a" style="gap:8px"><button class="btn-ghost" id="coachRolNo" style="flex:none;height:34px">Entendido</button><button class="btn-primary" id="coachRolIr">Ir al Admin</button></div></div>
+<div class="coach" id="coachRol"><div class="t">Falta el puesto</div><div class="d" id="coachRolTxt"></div><div class="a" style="gap:8px"><button class="btn-ghost" id="coachRolNo" style="flex:none;height:34px">Entendido</button><button class="btn-primary" id="coachRolIr">Ir al Admin</button></div></div>
 <div class="coach" id="coachCob"><div class="t">Asigná una cobertura</div><div class="d" id="coachCobTxt"></div><div class="a" style="gap:8px"><button class="btn-ghost" id="coachCobNo" style="flex:none;height:34px">Entendido</button><button class="btn-primary" id="coachCobIr">Agregar cobertura</button></div></div>
 <div class="coach" id="coach"><div class="t">Seleccioná una sede</div><div class="d" id="coachTxt"></div><div class="a"><button class="btn-primary" id="coachOk">Entendido</button></div></div>
 <div class="overlay" id="overlay"></div>
@@ -776,7 +776,7 @@ const pad = n => String(n).padStart(2,'0');
 const hNum = t => { const [h,m]=t.split(':').map(Number); return h + m/60; };
 const turnosDia = (c,d) => c.semana[d].filter(k => TURNOS[k]);
 const horasDia = (c,d) => turnosDia(c,d).reduce((a,k)=>a+TURNOS[k].horas,0);
-const rolHTML = c => c.rol ? `<div class="emp-role" title="${c.rol}">${c.rol}</div>` : `<button class="emp-sinrol" data-e="${c.id}"><i class="ti ti-alert-circle"></i>Sin rol laboral</button>`;
+const rolHTML = c => c.rol ? `<div class="emp-role" title="${c.rol}">${c.rol}</div>` : `<button class="emp-sinrol" data-e="${c.id}"><i class="ti ti-alert-circle"></i>Sin puesto</button>`;
 const horasAsignadas = c => c.semana.reduce((s,_,d)=> s + horasDia(c,d), 0);
 /* Horas por planificar = horas de contrato - ausencias aprobadas - festivos (8 h por día) */
 const HORAS_DIA = 8;

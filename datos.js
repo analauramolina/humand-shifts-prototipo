@@ -79,8 +79,8 @@ COLABORADORES.forEach(c => {
   const iso = f => `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`;
   PERFILES[c.nombre] = { nombre, apellido, email: sinAcentos(`${nombre}.${apellido}`.toLowerCase()).replace(/\s+/g, '') + '@lunazapateria.com.ar', contratacion: iso(contr), creacion: iso(alta) };
 });
-const SIN_PUESTO = ['Milagros Cabrera'];
-const CLAVE_PUESTOS = 'puestos.v3';
+const SIN_PUESTO = []; // todos los colaboradores arrancan con puesto asignado
+const CLAVE_PUESTOS = 'puestos.v4';
 /* Departamentos de la empresa (no son las sedes: la sede de cada persona se mantiene fija) */
 const DEPARTAMENTOS = ['Atención al público', 'Departamento comercial', 'Administración', 'Logística'];
 const deptoDeRol = r => r === 'Encargado de sucursal' ? 'Departamento comercial' : 'Atención al público';
@@ -88,7 +88,6 @@ const HISTORIAL_LABORAL = (() => {
   const h = {};
   COLABORADORES.forEach(c => {
     const jefe = c.rol === 'Encargado de sucursal' ? '' : (COLABORADORES.find(x => x.sede === c.sede && x.rol === 'Encargado de sucursal') || {}).nombre || '';
-    // Milagros Cabrera ingresa sin puesto cargado: su rol laboral se asigna desde Admin > Usuarios > Trabajo
     h[c.nombre] = SIN_PUESTO.includes(c.nombre) ? [] : [{ puesto: c.rol, inicio: PERFILES[c.nombre].contratacion, fin: '', depto: deptoDeRol(c.rol), jefe, aprob: '' }];
   });
   const g = Store.get(CLAVE_PUESTOS, null);
