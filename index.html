@@ -1348,7 +1348,7 @@ $('progBtn').onclick = e => {
   if(sinRol.length) return avisarSinRol(sinRol);
   if(!coberturaDe(sedeSel).length) return avisarSinCobertura();
   modal('Programar turnos',
-    `Se generará un borrador de la semana del ${rangoCorto()} para <b>${sedeSel}</b>, que cubre la cobertura requerida y respeta las regulaciones y las licencias aprobadas. Vas a poder ajustarlo antes de publicar.
+    `Se creará un borrador para <b>${sedeSel}</b> (semana del ${rangoCorto()}) según la Cobertura, respetando regulaciones y licencias aprobadas. Podrás revisarlo y editarlo antes de publicar.
      <label class="check" style="margin-top:14px"><input type="checkbox" id="mantener" checked><span>Mantener los turnos ya asignados<small>Si lo desmarcás, se reemplaza la programación actual de la sede.</small></span></label>`,
     'Programar', ejecutarProgramacion);
 };
