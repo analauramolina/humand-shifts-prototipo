@@ -1282,10 +1282,9 @@ function pintarVistas(){
         return `<div class="cm-card ${on?'on':''}" data-id="${v.id}" role="radio" aria-checked="${on}" tabindex="0">
           <div class="cm-row"><b>${v.nombre}</b>${v.id===aplicada?'<span class="cm-tag">Aplicada</span>':''}<span class="cm-radio"></span></div>
           ${on ? `<div class="cm-det">
-            <div><i class="ti ti-clock"></i>${r.horas}h 00m por semana</div>
+            <div><i class="ti ti-clock"></i>${r.horas}h por semana</div>
             <div><i class="ti ti-user"></i>Se necesitan al menos ${r.dia} personas por día</div>
-            <div><i class="ti ti-calendar-time"></i>${turnosCob().map(t=>`<span class="cm-dot ${t}"></span>${TURNOS[t].nombre}: ${r.porTurno[t]}`).join('<span style="width:14px;display:inline-block"></span>')}</div>
-            <div class="cm-roles">${ROLES.map(rol => `<span>${ROL_CORTO[rol]}: ${turnosCob().map(t=>Number((v.turnos[t]||{})[rol]||0)).join(' + ')}</span>`).join('')}</div>
+            <div><i class="ti ti-calendar-time"></i>${turnosCob().filter(t => r.porTurno[t]).map(t=>{ const n = r.porTurno[t]/7; return `<span class="cm-dot" style="background:${colorTurno(t)}"></span>${TURNOS[t].nombre}: ${n} ${n===1?'persona':'personas'}`; }).join('<span style="width:14px;display:inline-block"></span>')}</div>
             <button class="link" data-edit="${v.id}"><i class="ti ti-edit"></i>Editar vista</button>
           </div>` : ''}
         </div>`; }).join('') +
