@@ -1379,15 +1379,15 @@ function ejecutarProgramacion(){
     c.semana[a.d].push(a.turno);
     AUTO[`${a.emp}-${a.d}-${a.turno}`] = a.motivos;
   });
-  // Solo se asigna el descanso semanal que exige la ley: un "Día de descanso" por persona con turnos.
-  // Se elige su franco habitual según el historial. Los demás días libres quedan vacíos y la tarjeta marca las horas faltantes.
+  // Descanso semanal: se marca "Día de descanso" solo para quien trabaja todos los días menos uno.
   const conTurnos = new Set(res.asignaciones.map(a => a.emp));
   conTurnos.forEach(id => {
     const c = COLABORADORES[id]; if(c.semana.some(d => d.includes('D'))) return;
     const lic = d => LICENCIAS[c.nombre] && LICENCIAS[c.nombre].dias.includes(d);
-    const libres = [0,1,2,3,4,5,6].filter(d => !c.semana[d].length && !lic(d)); if(!libres.length) return;
-    const hist = HISTORIAL[c.nombre] || [], francos = d => hist.filter(sem => sem[d] === '').length;
-    const d = libres.reduce((a, b) => francos(b) >= francos(a) ? b : a);
+    // Solo se marca cuando queda un único día libre: ese día es su franco semanal.
+    // Si tiene dos o más días libres, ya descansa lo que pide la ley y los días quedan vacíos (la tarjeta marca las horas faltantes).
+    const libres = [0,1,2,3,4,5,6].filter(d => !c.semana[d].length && !lic(d)); if(libres.length !== 1) return;
+    const d = libres[0];
     c.semana[d].push('D'); AUTO[`${id}-${d}-D`] = ['Descanso semanal obligatorio'];
   });
   const n = res.asignaciones.length, h = res.sinCubrir.length;
