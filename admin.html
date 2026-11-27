@@ -80,8 +80,9 @@ h1{font-size:22px;font-weight:600;margin:4px 0 22px}
 .table{background:#fff;border:1px solid var(--line);border-radius:14px}
 .trow.head{border-radius:14px 14px 0 0}
 .trow .menu{min-width:330px}
-.trow .tot{font-weight:600;font-size:14px;color:#1f2329;text-align:right;padding-right:16px}
-.trow{display:grid;grid-template-columns:200px repeat(7,minmax(96px,1fr)) 110px 48px;align-items:center;border-bottom:1px solid var(--line);min-height:58px}
+.trow .tot{align-self:stretch;display:flex;align-items:center;justify-content:center;background:#f3f5fc;border-left:1px solid var(--line);border-right:1px solid var(--line);font-weight:700;font-size:15px;color:var(--navy);text-align:center}
+.trow.head .tot{background:#dfe4f5;color:#1f2329;font-weight:600;font-size:13.5px}
+.trow{display:grid;grid-template-columns:200px repeat(7,minmax(96px,1fr)) 130px 48px;align-items:center;border-bottom:1px solid var(--line);min-height:58px}
 .trow:last-child{border-bottom:0}
 .trow.head{background:var(--head);min-height:48px;font-weight:500;color:#3a404a;font-size:13.5px}
 .trow > div{padding:8px 10px}
@@ -385,7 +386,7 @@ h1{font-size:22px;font-weight:600;margin:4px 0 22px}
 
     <!-- Lista de horarios -->
     <section class="view" id="v-lista">
-      <p class="v-sub">Se lista a continuación la disponibilidad laboral por contrato de cada colaborador.</p>
+      <p class="v-sub">Se listan las configuraciones de disponibilidad horaria por contrato y cuántos colaboradores tiene asignados cada una.</p>
       <div class="bar">
         <label class="search"><i class="ti ti-search"></i><input id="qLista" placeholder="Buscar"></label>
         <div class="dd-wrap">
@@ -503,7 +504,7 @@ const rangoTurno = k => TURNOS[k] ? `${TURNOS[k].inicio} - ${TURNOS[k].fin}` : '
 function renderLista(){
   const q = $('qLista').value.trim().toLowerCase();
   const filas = HORARIOS.filter(h => !q || h.nombre.toLowerCase().includes(q));
-  $('tablaHorarios').innerHTML = `<div class="trow head"><div>Nombre</div>${DIAS_TABLA.map(d=>`<div>${d}</div>`).join('')}<div class="tot" style="font-weight:500">Total semanal</div><div></div></div>` +
+  $('tablaHorarios').innerHTML = `<div class="trow head"><div>Nombre</div>${DIAS_TABLA.map(d=>`<div>${d}</div>`).join('')}<div class="tot">Total semanal</div><div></div></div>` +
     filas.map(h => {
       const n = COLABORADORES.filter(c=>c.horario===h.id).length;
       const tot = h.dias.reduce((a,k)=>a+(TURNOS[k]?TURNOS[k].horas:0),0);
