@@ -847,7 +847,7 @@ function renderHeader(){
   const cb = $('confBtn');
   cb.textContent = `Conflictos (${VIS.length})`;
   cb.disabled = VIS.length===0;
-  cb.classList.toggle('warn', VIS.length>0 && bloq===0);
+  // Como en Humand, el botón es rojo ante cualquier conflicto (bloqueante o advertencia)
   const pb = $('publish');
   pb.textContent = `Publicar (${pend})`;
   pb.disabled = bloq>0 || !vis.some(pendiente);
