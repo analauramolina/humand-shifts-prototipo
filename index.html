@@ -586,6 +586,9 @@ body.full .card{border:0;border-radius:0}
 
 /* Horas programadas por debajo de las horas por planificar */
 .emp-hours.under{color:#9a5b00}
+.emp-hours.full{color:#1e7a35;font-weight:600}
+.emp-hours.full u{text-decoration-color:#2e9e5b}
+.emp-hours.full .ti-clock{color:#2e9e5b}
 .emp-hours.under u{text-decoration-color:#d98a00}
 .emp-hours.under .ti-clock{color:#d98a00}
 
@@ -819,7 +822,7 @@ function render(){
     html += `<div class="emp">${ckBox('e'+c.id)}<div class="av"><i class="ti ti-user"></i></div><div class="emp-info">
       <div class="emp-name">${c.nombre}</div>
       ${rolHTML(c)}
-      <div class="emp-hours ${h>porPlanificar(c)?'over':(h<porPlanificar(c) && c.semana.some(d=>d.length) ? 'under' : '')}"><i class="ti ti-clock"></i><u class="hrs" data-t="p" data-e="${c.id}">${fmtH(h)}</u> / <u class="hrs" data-t="c" data-e="${c.id}">${fmtH(porPlanificar(c))}</u></div>
+      <div class="emp-hours ${h>porPlanificar(c)?'over':(h>0 && h===porPlanificar(c) ? 'full' : (h<porPlanificar(c) && c.semana.some(d=>d.length) ? 'under' : ''))}"><i class="ti ti-clock"></i><u class="hrs" data-t="p" data-e="${c.id}">${fmtH(h)}</u> / <u class="hrs" data-t="c" data-e="${c.id}">${fmtH(porPlanificar(c))}</u></div>
     </div></div>`;
     c.semana.forEach((items,i)=>{
       const extra = (sel && sel.emp===c.id && sel.dia===i ? ' sel' : '') + (CELLS.has(c.id+'-'+i) ? ' pcell' : '') + (focus && focus.emp===c.id && focus.dia===i ? ' focus' : '');

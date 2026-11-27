@@ -680,7 +680,8 @@ $('grid').addEventListener('mouseover', e => {
   t.innerHTML = u.dataset.t === 'p'
     ? `<div class="hh"><span>Horas planificadas</span><b>${fmtH(horasAsignadas(c))}</b></div>${(() => { const dif = porPlanificar(c) - horasAsignadas(c);
         return dif > 0 && c.semana.some(d => d.length) ? `<div class="hr"><div style="color:#9a5b00"><span>Faltan para completar las horas por planificar</span><span>${fmtH(dif)}</span></div></div>`
-          : dif < 0 ? `<div class="hr"><div style="color:#c62828"><span>Exceden las horas por planificar</span><span>${fmtH(-dif)}</span></div></div>` : ''; })()}`
+          : dif < 0 ? `<div class="hr"><div style="color:#c62828"><span>Exceden las horas por planificar</span><span>${fmtH(-dif)}</span></div></div>`
+          : horasAsignadas(c) > 0 ? `<div class="hr"><div style="color:#1e7a35"><span>Completa las horas por planificar</span><span>✓</span></div></div>` : ''; })()}`
     : `<div class="hh"><span>Horas por planificar</span><b>${fmtH(porPlanificar(c))}</b></div><div class="hr"><div><span>Horas de contrato</span><span>${c.capacidad}h</span></div><div><span>Ausencias aprobadas</span><span>${fmtH(ausenciasH(c))}</span></div><div><span>Festivos</span><span>${fmtH(festivosH())}</span></div></div>`;
   const r = u.getBoundingClientRect();
   t.classList.add('open'); t.style.left = Math.max(8, r.left - 40) + 'px'; t.style.top = (r.bottom + 8) + 'px';
