@@ -83,7 +83,7 @@ button{font-family:inherit;cursor:pointer}
 .dd-foot button{background:none;border:0;color:var(--navy);font-weight:600;font-size:17px}
 
 /* Grid */
-.grid-scroll{overflow:auto;border-top:1px solid var(--line);max-height:calc(100vh - 110px)}
+.grid-scroll{overflow-x:auto;border-top:1px solid var(--line)}
 .grid{display:grid;grid-template-columns:262px repeat(7,minmax(118px,1fr));min-width:1088px}
 .gh{position:sticky;top:0;z-index:2;background:var(--head);height:76px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px;color:#1f2329}
 .gh.first{justify-content:flex-start;padding-left:26px;border-right:3px solid #d0d3da;position:sticky;left:0;top:0;z-index:4}
@@ -634,7 +634,6 @@ body.full .card{border:0;border-radius:0}
 .grid{grid-template-columns:240px repeat(7,minmax(108px,1fr));min-width:996px}
 .cell{padding:10px 6px}
 .main{min-width:0}
-body.full .grid-scroll{max-height:calc(100vh - 150px)}
 .grid-scroll::-webkit-scrollbar{height:12px;width:12px}
 .grid-scroll::-webkit-scrollbar-thumb{background:#c3c7cf;border-radius:8px;border:3px solid #fff}
 .grid-scroll::-webkit-scrollbar-track{background:#f6f7f9}
