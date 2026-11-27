@@ -123,7 +123,7 @@ function pintarPerfil() {
   if (PSEC === 'general') {
     $('pMain').innerHTML = `<div class="p-col"><h2 class="p-h">Información del perfil</h2>
       <div class="p-card p-hero"><div class="p-banner"></div><div class="p-who"><span class="p-avatar">${iniciales(c.nombre)}<span class="p-cam"><i class="ti ti-camera"></i></span></span>
-        <div><div class="p-name">${escU(c.nombre)}</div><div class="p-pos">${act ? `${escU(act.puesto)} | ${escU(act.depto)}` : 'Sin puesto asignado'}</div></div><span class="u-pill" style="margin-left:auto;align-self:flex-start">Activado</span></div></div>
+        <div><div class="p-name">${escU(c.nombre)}</div><div class="p-pos">${act ? `${escU(act.puesto)} | ${escU(act.depto)}` : 'Sin puesto asignado'} · Sede ${escU(c.sede)}</div></div><span class="u-pill" style="margin-left:auto;align-self:flex-start">Activado</span></div></div>
       <div class="p-card"><div class="p-ct"><b>Información básica</b><button class="p-edit" data-x aria-label="Editar"><i class="ti ti-pencil"></i></button></div>
         <div class="p-grid">${campo('Nombre *', p.nombre)}${campo('Apellido *', p.apellido)}${campo('Apodo', '-')}</div>
         <div class="p-grid">${campo('Fecha de nacimiento', '-')}${campo('Email', p.email, true)}${campo('Celular', '-')}</div>
@@ -140,7 +140,7 @@ function pintarPerfil() {
         <div class="p-tabla"><table><thead><tr><th>Puesto</th><th>Fecha de inicio</th><th>Fecha de fin</th><th>Departamento</th><th>Jefe directo</th><th>Aprobador</th><th></th></tr></thead><tbody>
           ${hist.map(x => `<tr><td class="pu"><b>${escU(x.puesto)}</b>${!x.fin && act && x.inicio === act.inicio && x.puesto === act.puesto ? '<span class="u-act">Actual</span>' : ''}</td><td>${fmtFecha(x.inicio)}</td><td>${fmtFecha(x.fin)}</td><td>${escU(x.depto || '-')}</td><td><b>${escU(x.jefe || '-')}</b></td><td>${escU(x.aprob || '-')}</td><td class="u-k"><button class="u-kebab sm" data-i="${x.i}" aria-label="Acciones del puesto"><i class="ti ti-dots-vertical"></i></button></td></tr>`).join('') || '<tr><td colspan="7" class="u-vacio">No hay puestos cargados.</td></tr>'}
         </tbody></table></div>
-        <p class="p-nota"><i class="ti ti-info-circle"></i>El puesto actual define el rol laboral y la sede de la persona en Turnos laborales: la cobertura, los conflictos y Programar lo usan.</p></div>
+        <p class="p-nota"><i class="ti ti-info-circle"></i>El puesto actual define el rol laboral de la persona en Turnos laborales: la cobertura, los conflictos y Programar lo usan.</p></div>
       <div class="p-card" id="pc-salario"><div class="p-ct"><div><b>Salario</b><div class="p-cs">Consulta el importe percibido y el historial salarial</div></div><div style="display:flex;gap:10px"><button class="btn-out" data-x>Historial salarial <i class="ti ti-refresh"></i></button><button class="p-edit" data-x aria-label="Editar"><i class="ti ti-pencil"></i></button></div></div>
         <div class="p-gris" style="justify-content:space-between"><div class="p-f"><span>Salario bruto</span><b>-</b></div><div class="p-f" style="text-align:right"><span>Vigente desde</span><b>-</b></div></div></div></div>`;
     $('pAddPuesto').onclick = () => abrirPuesto(null);
@@ -175,7 +175,7 @@ const ENCARGADOS = () => COLABORADORES.filter(x => x.rol === 'Encargado de sucur
 function abrirPuesto(i) {
   const c = COLABORADORES[PID], h = HISTORIAL_LABORAL[c.nombre] || (HISTORIAL_LABORAL[c.nombre] = []);
   const act = puestoActual(c.nombre);
-  const x = i !== null ? h[i] : { puesto: '', inicio: '', fin: '', depto: `Sede ${c.sede}`, jefe: act ? act.jefe : '', aprob: act ? act.aprob : '' };
+  const x = i !== null ? h[i] : { puesto: '', inicio: '', fin: '', depto: act ? act.depto : 'Atención al público', jefe: act ? act.jefe : '', aprob: act ? act.aprob : '' };
   const sel = (id, opts, v, vacio) => `<select class="u-field" id="${id}">${vacio ? `<option value="">${vacio}</option>` : ''}${opts.map(o => `<option ${o === v ? 'selected' : ''}>${escU(o)}</option>`).join('')}</select>`;
   const personas = ENCARGADOS().filter(p => p.nombre !== c.nombre).map(p => p.nombre);
   $('shTit').textContent = i !== null ? 'Editar puesto' : 'Agregar puesto';
@@ -183,7 +183,7 @@ function abrirPuesto(i) {
     <div class="u-box"><label>Puesto</label>${sel('fPuesto', ROLES, x.puesto, 'Seleccionar')}</div>
     <div class="u-box"><label>Fecha de inicio</label><input type="date" class="u-field" id="fIni" value="${x.inicio}"></div>
     <div class="u-box"><label>Fecha de fin (Opcional)</label><input type="date" class="u-field" id="fFin" value="${x.fin}"><small>Si el puesto sigue vigente, dejá este campo vacío.</small></div>
-    <div class="u-box"><label>Departamento</label>${sel('fDepto', SEDES.flatMap(g => g.items).map(s => `Sede ${s}`), x.depto)}</div>
+    <div class="u-box"><label>Departamento</label>${sel('fDepto', DEPARTAMENTOS, x.depto)}</div>
     <div class="u-box"><label>Jefe directo (Opcional)</label>${sel('fJefe', personas, x.jefe, 'Sin jefe directo')}</div>
     <div class="u-box"><label>Aprobador (Opcional)</label>${sel('fAprob', personas, x.aprob, 'Sin aprobador')}</div>
     ${i === null ? '<p class="p-nota"><i class="ti ti-info-circle"></i>Si el nuevo puesto queda vigente, el puesto actual se cierra el día anterior a su fecha de inicio.</p>' : ''}`;

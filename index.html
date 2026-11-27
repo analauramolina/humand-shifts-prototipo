@@ -583,6 +583,11 @@ body.full .card{border:0;border-radius:0}
 .emp-sinrol .ti{font-size:14px}
 .coach .btn-ghost{background:none;border:0;color:var(--navy);font-weight:600;font-size:14px;padding:0 10px}
 .emp-sinrol.spot{box-shadow:0 0 0 3px rgba(217,138,0,.25)}
+
+/* Horas programadas por debajo de las horas por planificar */
+.emp-hours.under{color:#9a5b00}
+.emp-hours.under u{text-decoration-color:#d98a00}
+.emp-hours.under .ti-clock{color:#d98a00}
 </style>
 </head>
 <body>
@@ -764,7 +769,7 @@ function render(){
     html += `<div class="emp">${ckBox('e'+c.id)}<div class="av"><i class="ti ti-user"></i></div><div class="emp-info">
       <div class="emp-name">${c.nombre}</div>
       ${rolHTML(c)}
-      <div class="emp-hours ${h>porPlanificar(c)?'over':''}"><i class="ti ti-clock"></i><u class="hrs" data-t="p" data-e="${c.id}">${fmtH(h)}</u> / <u class="hrs" data-t="c" data-e="${c.id}">${fmtH(porPlanificar(c))}</u></div>
+      <div class="emp-hours ${h>porPlanificar(c)?'over':(h<porPlanificar(c) && c.semana.some(d=>d.length) ? 'under' : '')}"><i class="ti ti-clock"></i><u class="hrs" data-t="p" data-e="${c.id}">${fmtH(h)}</u> / <u class="hrs" data-t="c" data-e="${c.id}">${fmtH(porPlanificar(c))}</u></div>
     </div></div>`;
     c.semana.forEach((items,i)=>{
       const extra = (sel && sel.emp===c.id && sel.dia===i ? ' sel' : '') + (CELLS.has(c.id+'-'+i) ? ' pcell' : '') + (focus && focus.emp===c.id && focus.dia===i ? ' focus' : '');
@@ -1293,12 +1298,17 @@ function ejecutarProgramacion(){
     c.semana[a.d].push(a.turno);
     AUTO[`${a.emp}-${a.d}-${a.turno}`] = a.motivos;
   });
-  // Los días libres de quien recibió turnos quedan como "Día de descanso" (franco), salvo los días con licencia
+  // Solo se asigna el descanso semanal que exige la ley: un "Día de descanso" por persona con turnos.
+  // Se elige su franco habitual según el historial. Los demás días libres quedan vacíos y la tarjeta marca las horas faltantes.
   const conTurnos = new Set(res.asignaciones.map(a => a.emp));
-  conTurnos.forEach(id => { const c = COLABORADORES[id]; for(let d=0; d<7; d++){
-    const lic = LICENCIAS[c.nombre] && LICENCIAS[c.nombre].dias.includes(d);
-    if(!c.semana[d].length && !lic){ c.semana[d].push('D'); AUTO[`${id}-${d}-D`] = ['Franco']; }
-  }});
+  conTurnos.forEach(id => {
+    const c = COLABORADORES[id]; if(c.semana.some(d => d.includes('D'))) return;
+    const lic = d => LICENCIAS[c.nombre] && LICENCIAS[c.nombre].dias.includes(d);
+    const libres = [0,1,2,3,4,5,6].filter(d => !c.semana[d].length && !lic(d)); if(!libres.length) return;
+    const hist = HISTORIAL[c.nombre] || [], francos = d => hist.filter(sem => sem[d] === '').length;
+    const d = libres.reduce((a, b) => francos(b) >= francos(a) ? b : a);
+    c.semana[d].push('D'); AUTO[`${id}-${d}-D`] = ['Descanso semanal obligatorio'];
+  });
   const n = res.asignaciones.length, h = res.sinCubrir.length;
   toast(`Se generaron ${n} turnos para ${sedeSel}` + (h ? `. ${h===1?'Queda 1 turno':'Quedan '+h+' turnos'} sin cubrir por falta de personal` : ' y la cobertura quedó completa'), h ? 'warn' : false,
     {label:'Deshacer', fn: () => {
@@ -1351,6 +1361,11 @@ $('q').addEventListener('input', () => { focus = null; render(); });
 function refrescarReglas(){ Motor.recargarReglas(); if(sedeSel && !coberturaDe(sedeSel).length) covOpen = false; render(); }
 window.addEventListener('pageshow', e => { if(e.persisted) refrescarReglas(); });
 window.addEventListener('focus', refrescarReglas);
+/* Si se cambió un puesto en Admin > Usuarios, la app toma el nuevo rol al volver */
+function refrescarPuestos(){ recargarPuestos(); render(); }
+window.addEventListener('pageshow', e => { if(e.persisted) refrescarPuestos(); });
+window.addEventListener('focus', refrescarPuestos);
+window.addEventListener('storage', e => { if(!e.key || e.key.includes('puestos')) refrescarPuestos(); });
 window.addEventListener('storage', e => { if(!e.key || e.key === 'luna:reglas') refrescarReglas(); });
 
 renderDD(); render(); hydrateIcons();

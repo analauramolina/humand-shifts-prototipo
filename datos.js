@@ -80,13 +80,16 @@ COLABORADORES.forEach(c => {
   PERFILES[c.nombre] = { nombre, apellido, email: sinAcentos(`${nombre}.${apellido}`.toLowerCase()).replace(/\s+/g, '') + '@lunazapateria.com.ar', contratacion: iso(contr), creacion: iso(alta) };
 });
 const SIN_PUESTO = ['Milagros Cabrera'];
-const CLAVE_PUESTOS = 'puestos.v2';
+const CLAVE_PUESTOS = 'puestos.v3';
+/* Departamentos de la empresa (no son las sedes: la sede de cada persona se mantiene fija) */
+const DEPARTAMENTOS = ['Atención al público', 'Departamento comercial', 'Administración', 'Logística'];
+const deptoDeRol = r => r === 'Encargado de sucursal' ? 'Departamento comercial' : 'Atención al público';
 const HISTORIAL_LABORAL = (() => {
   const h = {};
   COLABORADORES.forEach(c => {
     const jefe = c.rol === 'Encargado de sucursal' ? '' : (COLABORADORES.find(x => x.sede === c.sede && x.rol === 'Encargado de sucursal') || {}).nombre || '';
     // Milagros Cabrera ingresa sin puesto cargado: su rol laboral se asigna desde Admin > Usuarios > Trabajo
-    h[c.nombre] = SIN_PUESTO.includes(c.nombre) ? [] : [{ puesto: c.rol, inicio: PERFILES[c.nombre].contratacion, fin: '', depto: `Sede ${c.sede}`, jefe, aprob: '' }];
+    h[c.nombre] = SIN_PUESTO.includes(c.nombre) ? [] : [{ puesto: c.rol, inicio: PERFILES[c.nombre].contratacion, fin: '', depto: deptoDeRol(c.rol), jefe, aprob: '' }];
   });
   const g = Store.get(CLAVE_PUESTOS, null);
   if (g) Object.keys(g).forEach(n => { if (h[n]) h[n] = g[n]; });
@@ -95,7 +98,13 @@ const HISTORIAL_LABORAL = (() => {
 /* Puesto actual: el que no tiene fecha de fin; si hay varios, el de inicio más reciente */
 const puestoActual = n => (HISTORIAL_LABORAL[n] || []).filter(p => !p.fin).sort((a, b) => b.inicio.localeCompare(a.inicio))[0] || null;
 function aplicarPuestos() {
-  COLABORADORES.forEach(c => { const p = puestoActual(c.nombre); if (!p) { c.rol = ''; return; } c.rol = ROLES.includes(p.puesto) ? p.puesto : ''; const s = p.depto.replace('Sede ', ''); if (SEDE_PAIS[s]) c.sede = s; });
+  COLABORADORES.forEach(c => { const p = puestoActual(c.nombre); if (!p) { c.rol = ''; return; } c.rol = ROLES.includes(p.puesto) ? p.puesto : ''; });
+}
+/* Relee los puestos guardados desde el Admin (por ejemplo, al volver del Admin a la app) */
+function recargarPuestos() {
+  const g = Store.get(CLAVE_PUESTOS, null);
+  if (g) Object.keys(g).forEach(n => { if (HISTORIAL_LABORAL[n]) HISTORIAL_LABORAL[n] = g[n]; });
+  aplicarPuestos();
 }
 aplicarPuestos();
 

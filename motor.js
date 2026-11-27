@@ -175,6 +175,17 @@ const Motor = (() => {
       return { total, motivos };
     }
 
+    // Reparto: cada persona tiene una parte proporcional a sus horas disponibles (contrato menos licencias)
+    const disp = c => Math.max(0, c.capacidad - ((licencias[c.nombre] || {}).dias || []).length * 8);
+    const demandaRol = {};
+    huecos.forEach(h => { demandaRol[h.rol] = (demandaRol[h.rol] || 0) + turnos[h.turno].horas; });
+    pool.forEach(c => { demandaRol[c.rol] = (demandaRol[c.rol] || 0) + horas(c); });
+    const dispRol = {};
+    pool.forEach(c => { dispRol[c.rol] = (dispRol[c.rol] || 0) + disp(c); });
+    const objetivo = c => dispRol[c.rol] ? disp(c) / dispRol[c.rol] * (demandaRol[c.rol] || 0) : 0;
+    // Está "debajo" si con este turno no supera su parte proporcional en más de media jornada
+    const debajo = (c, h) => horas(c) + turnos[h.turno].horas <= objetivo(c) + turnos[h.turno].horas / 2;
+
     // 4. Resolución: primero el hueco con menos candidatos
     const asignaciones = [], sinCubrir = [];
     while (huecos.length) {
@@ -186,9 +197,11 @@ const Motor = (() => {
       }
       huecos = huecos.filter(x => x !== mejor.h);
       if (!mejor.e.length) { sinCubrir.push(mejor.h); continue; }
-      const ranking = mejor.e.map(c => ({ c, ...puntuar(c, mejor.h) }))
-        .sort((a, b) => b.total - a.total || a.c.nombre.localeCompare(b.c.nombre, 'es'));
+      // Primero quienes todavía no alcanzaron su parte proporcional de horas; dentro de cada grupo, el mejor puntaje
+      const ranking = mejor.e.map(c => ({ c, tier: debajo(c, mejor.h) ? 0 : 1, ...puntuar(c, mejor.h) }))
+        .sort((a, b) => a.tier - b.tier || b.total - a.total || a.c.nombre.localeCompare(b.c.nombre, 'es'));
       const g = ranking[0];
+      if (g.tier === 0 && ranking.some(r => r.tier === 1 && r.total > g.total)) g.motivos = ['Reparto: todavía no completó su parte proporcional de horas en la semana', ...g.motivos.filter(m => !m.startsWith('Carga'))];
       g.c.semana[mejor.h.d].push(mejor.h.turno);
       asignaciones.push({ emp: g.c.id, d: mejor.h.d, turno: mejor.h.turno, puntaje: +g.total.toFixed(2), motivos: g.motivos });
     }
