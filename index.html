@@ -369,8 +369,8 @@ select.field{appearance:none;width:100%;font:inherit;font-size:15px;color:#2b303
 .cm-input{width:100%;height:44px;border:1px solid var(--line-2);border-radius:6px;padding:0 12px;font:inherit;font-size:15px;outline:0}
 .cm-input:focus{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
 .cm-input.err{border-color:#d32f2f;box-shadow:0 0 0 1px #d32f2f}
-.cm-tab{border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.cm-tr{display:grid;grid-template-columns:1.3fr 1fr 1fr;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);font-size:14px}
+.cm-tab{border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.cm-tr{display:grid;grid-template-columns:minmax(150px,1.3fr) repeat(var(--cols,2),minmax(130px,1fr));min-width:calc(150px + var(--cols,2) * 140px);align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);font-size:14px}
 .cm-tr:last-child{border-bottom:0}
 .cm-tr.head{background:var(--head);font-weight:500;font-size:13px;color:#3a404a}
 .cm-tr.head small{display:block;font-weight:400;color:var(--muted)}
@@ -1264,8 +1264,11 @@ function abrirVistas(){
 }
 function cerrarVistas(){ $('cmBg').classList.remove('open'); cm = null; }
 function stepperCm(val, data){ return `<div class="num"><button data-step="-1" aria-label="Restar" ${val<=0?'disabled':''}><i class="ti ti-minus"></i></button><input type="number" min="0" value="${val}" ${data}><button data-step="1" aria-label="Sumar"><i class="ti ti-plus"></i></button></div>`; }
+/* Turnos que se muestran en las vistas de cobertura: los del repositorio que no fueron eliminados */
+const turnosCob = () => Object.keys(TURNOS).filter(k => !TURNOS[k].eliminado);
 function pintarVistas(){
   const el = $('cm');
+  el.style.width = `min(${540 + Math.max(0, turnosCob().length - 2) * 150}px, calc(100vw - 32px))`;
   const cabecera = t => `<div class="cm-ic"><i class="ti ti-users-group"></i></div><button class="cm-x" id="cmX" aria-label="Cerrar"><i class="ti ti-x"></i></button><h3>${t}</h3>
     <div class="cm-range"><i class="ti ti-calendar-event"></i>${rangoLargo()} · ${sedeSel}</div>`;
   if(cm.modo === 'lista'){
@@ -1281,8 +1284,8 @@ function pintarVistas(){
           ${on ? `<div class="cm-det">
             <div><i class="ti ti-clock"></i>${r.horas}h 00m por semana</div>
             <div><i class="ti ti-user"></i>Se necesitan al menos ${r.dia} personas por día</div>
-            <div><i class="ti ti-calendar-time"></i>${Object.keys(TURNOS).map(t=>`<span class="cm-dot ${t}"></span>${TURNOS[t].nombre}: ${r.porTurno[t]}`).join('<span style="width:14px;display:inline-block"></span>')}</div>
-            <div class="cm-roles">${ROLES.map(rol => `<span>${ROL_CORTO[rol]}: ${Object.keys(TURNOS).map(t=>Number((v.turnos[t]||{})[rol]||0)).join(' + ')}</span>`).join('')}</div>
+            <div><i class="ti ti-calendar-time"></i>${turnosCob().map(t=>`<span class="cm-dot ${t}"></span>${TURNOS[t].nombre}: ${r.porTurno[t]}`).join('<span style="width:14px;display:inline-block"></span>')}</div>
+            <div class="cm-roles">${ROLES.map(rol => `<span>${ROL_CORTO[rol]}: ${turnosCob().map(t=>Number((v.turnos[t]||{})[rol]||0)).join(' + ')}</span>`).join('')}</div>
             <button class="link" data-edit="${v.id}"><i class="ti ti-edit"></i>Editar vista</button>
           </div>` : ''}
         </div>`; }).join('') +
@@ -1296,9 +1299,9 @@ function pintarVistas(){
       <div class="cm-lbl">Nombre de la vista</div>
       <input class="cm-input" id="cmNombre" value="${d.nombre.replace(/"/g,'&quot;')}" placeholder="Por ejemplo, Hot Sale">
       <div class="cm-lbl">Personas necesarias por turno, todos los días</div>
-      <div class="cm-tab"><div class="cm-tr head"><div>Rol</div>${Object.keys(TURNOS).map(t=>`<div>${TURNOS[t].nombre}<small>${TURNOS[t].inicio} - ${TURNOS[t].fin}</small></div>`).join('')}</div>
-      ${ROLES.map(rol => `<div class="cm-tr"><div>${rol}</div>${Object.keys(TURNOS).map(t=>`<div>${stepperCm(Number((d.turnos[t]||{})[rol]||0), `data-cm="${t}|${rol}"`)}</div>`).join('')}</div>`).join('')}
-      <div class="cm-tr tot"><div>Total por día</div>${Object.keys(TURNOS).map(t=>`<div>${r.porTurno[t]/7} personas</div>`).join('')}</div></div>
+      <div class="cm-tab" style="--cols:${turnosCob().length}"><div class="cm-tr head"><div>Rol</div>${turnosCob().map(t=>`<div>${TURNOS[t].nombre}<small>${TURNOS[t].inicio} - ${TURNOS[t].fin}</small></div>`).join('')}</div>
+      ${ROLES.map(rol => `<div class="cm-tr"><div>${rol}</div>${turnosCob().map(t=>`<div>${stepperCm(Number((d.turnos[t]||{})[rol]||0), `data-cm="${t}|${rol}"`)}</div>`).join('')}</div>`).join('')}
+      <div class="cm-tr tot"><div>Total por día</div>${turnosCob().map(t=>`<div>${r.porTurno[t]/7} personas</div>`).join('')}</div></div>
       <div class="cm-hint" style="text-align:left">Equivale a ${r.dia} personas por día y ${r.horas}h por semana.</div>
       <div class="cm-foot"><button class="cm-cancel" id="cmBack">Volver</button><button class="btn-primary" id="cmSave">Guardar vista</button></div>`;
   }
