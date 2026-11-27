@@ -16,6 +16,30 @@ const dma = f => `${pad(f.getDate())}/${pad(f.getMonth() + 1)}/${f.getFullYear()
 const ubicar = f => { const n = Math.round((f - BASE) / DIA_MS); return { off: Math.floor(n / 7), d: ((n % 7) + 7) % 7 }; };
 const vacia = () => [[], [], [], [], [], [], []];
 
+/* ---------- Campos reutilizables del panel lateral ---------- */
+// Hora siempre en formato hh:mm (24 h), sin depender del formato regional del navegador
+const horaOk = v => /^([01]\d|2[0-3]):[0-5]\d$/.test(v || '');
+const horaHTML = (id, v, nombre) => `<label class="field hora"><input id="${id}" type="text" inputmode="numeric" maxlength="5" placeholder="hh:mm" aria-label="${nombre}" title="${nombre}" value="${v || ''}" autocomplete="off"><i class="ti ti-clock"></i></label>`;
+document.addEventListener('input', e => {
+  const el = e.target; if (!el.closest || !el.closest('.field.hora')) return;
+  let d = el.value.replace(/\D/g, '').slice(0, 4);
+  if (d.length >= 3) d = d.slice(0, 2) + ':' + d.slice(2);
+  if (el.value !== d) el.value = d;
+  el.closest('.field.hora').classList.toggle('err', el.value.length === 5 && !horaOk(el.value));
+}, true);
+// Selector de colaboradores: los elegidos se ven como chips dentro del mismo cuadro
+const mselHTML = (id, sel, opciones) => `<div class="msel" id="${id}"><div class="msel-box">${sel.map(i => `<span class="chip">${esc(COLABORADORES[i].nombre)}<button type="button" data-quitar="${i}" aria-label="Quitar a ${esc(COLABORADORES[i].nombre)}"><i class="ti ti-x" style="font-size:12px"></i></button></span>`).join('')}<input class="msel-q" placeholder="${sel.length ? '' : 'Buscar'}" autocomplete="off" aria-label="Buscar colaborador"><i class="ti ti-chevron-down msel-ch"></i></div>
+  <div class="msel-dd">${opciones.filter(c => !sel.includes(c.id)).map(c => `<button type="button" data-add="${c.id}" data-n="${esc(c.nombre.toLowerCase())}">${esc(c.nombre)}<small>${esc(c.rol || 'Sin rol laboral')} · ${c.sede}</small></button>`).join('') || '<div class="msel-vacio">No hay más colaboradores para agregar.</div>'}</div></div>`;
+function wireMsel(id, onAdd, onRemove) {
+  const el = $(id), q = el.querySelector('.msel-q');
+  el.querySelector('.msel-box').onclick = e => { if (e.target.closest('[data-quitar]')) return; el.classList.add('open'); q.focus(); };
+  q.oninput = e => { e.stopPropagation(); const t = q.value.trim().toLowerCase(); el.querySelectorAll('[data-add]').forEach(b => b.style.display = b.dataset.n.includes(t) ? '' : 'none'); el.classList.add('open'); };
+  el.querySelectorAll('[data-add]').forEach(b => b.onclick = e => { e.stopPropagation(); onAdd(+b.dataset.add); });
+  el.querySelectorAll('[data-quitar]').forEach(b => b.onclick = e => { e.stopPropagation(); onRemove(+b.dataset.quitar); });
+}
+document.addEventListener('click', e => document.querySelectorAll('.msel.open').forEach(m => { if (!m.contains(e.target)) m.classList.remove('open'); }));
+
+
 /* ---------- Semanas ---------- */
 let SEM = 0, MODO = 'semana', MES = { y: 2026, m: 11 };
 const LIC0 = JSON.parse(JSON.stringify(LICENCIAS)); // las licencias aprobadas caen en la semana 0
@@ -202,10 +226,9 @@ function paintForm() {
     <div class="box"><div class="row2"><div style="flex:1"><label>Nombre del turno</label><input class="field" id="fNom" maxlength="40" value="${f.nombre.replace(/"/g, '&quot;')}" placeholder="Ej.: Turno apertura"></div>
       <div style="width:200px"><label>Color</label><div class="field colorf"><span class="dot" id="fDot" style="background:${COLORES[f.color]}"></span><select id="fCol">${opts(Object.fromEntries(Object.keys(COLORES).map(c => [c, c])), f.color)}</select></div></div></div></div>
     <div class="box"><label>Colaboradores</label>
-      ${f.emps.length ? `<div class="chips">${f.emps.map(id => `<span class="chip">${COLABORADORES[id].nombre}<button data-quitar="${id}" aria-label="Quitar"><i class="ti ti-x" style="font-size:12px"></i></button></span>`).join('')}</div>` : ''}
-      <select class="field" id="fEmp"><option value="">Buscar</option>${libres.filter(c => !f.emps.includes(c.id)).map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')}</select></div>
+      ${mselHTML('fEmpSel', f.emps, libres)}</div>
     <div class="box"><label>Fecha del turno</label><input type="date" class="field" id="fFecha" value="${f.fecha}"></div>
-    <div class="box"><label>Horario</label><div class="row2"><input type="time" class="field" id="fIni" value="${f.inicio}"><input type="time" class="field" id="fFin" value="${f.fin}"></div>
+    <div class="box"><label>Horario</label><div class="row2">${horaHTML('fIni', f.inicio, 'Hora de entrada')}${horaHTML('fFin', f.fin, 'Hora de salida')}</div>
       <div style="text-align:center;margin-top:12px"><button class="plus-sq" disabled title="Agregar otro tramo horario: no disponible en el prototipo"><i class="ti ti-plus"></i></button></div></div>
     <div class="box"><label>Ubicación (Opcional)</label><select class="field" id="fUbi"><option value="">Buscar</option>${SEDES.flatMap(g => g.items).map(s => `<option ${s === f.ubic ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
     <div class="box"><label>Recurrencia</label>
@@ -228,8 +251,8 @@ function paintForm() {
   $('fRep').onchange = () => { leer(); f.rep = $('fRep').checked; paintForm(); };
   if ($('fFreq')) $('fFreq').onchange = () => { leer(); f.freq = $('fFreq').value; paintForm(); };
   if ($('fTerm')) $('fTerm').onchange = () => { leer(); f.termina = $('fTerm').value; paintForm(); };
-  $('fEmp').onchange = () => { leer(); if ($('fEmp').value !== '') f.emps.push(+$('fEmp').value); paintForm(); };
-  $('drBody').querySelectorAll('[data-quitar]').forEach(b => b.onclick = () => { leer(); f.emps = f.emps.filter(id => id !== +b.dataset.quitar); paintForm(); });
+  wireMsel('fEmpSel', id => { leer(); f.emps.push(id); paintForm(); $('fEmpSel').classList.add('open'); $('fEmpSel').querySelector('.msel-q').focus(); },
+    id => { leer(); f.emps = f.emps.filter(x => x !== id); paintForm(); });
   $('drOk').onclick = () => { leer(); if (valido(f)) confirmarTurno(f); };
   validar();
 }
@@ -240,7 +263,7 @@ function resumen(f) {
   return `Este turno se repite ${cada}, indefinidamente.`;
 }
 function valido(f) {
-  if (!f.nombre.trim() || !f.emps.length || !f.fecha || !f.inicio || !f.fin || f.fin <= f.inicio) return false;
+  if (!f.nombre.trim() || !f.emps.length || !f.fecha || !horaOk(f.inicio) || !horaOk(f.fin) || f.fin <= f.inicio) return false;
   if (f.rep && f.termina === 'veces' && !(+f.veces >= 1)) return false;
   if (f.rep && f.termina === 'fecha' && !(f.hasta && f.hasta >= f.fecha)) return false;
   return true;
@@ -351,13 +374,13 @@ function paintTurnoRepo() {
   $('drBody').innerHTML = `
     <div class="box"><div class="row2"><div style="flex:1"><label>Nombre del turno</label><input class="field" id="rtNom" maxlength="40" placeholder="Ej. Turno mañana" value="${f.nombre.replace(/"/g, '&quot;')}"></div>
       <div style="width:200px"><label>Color</label><div class="field colorf"><span class="dot" id="rtDot" style="background:${COLORES[f.color]}"></span><select id="rtCol">${Object.keys(COLORES).map(c => `<option ${c === f.color ? 'selected' : ''}>${c}</option>`).join('')}</select></div></div></div></div>
-    <div class="box"><label>Horario</label><div class="row2"><input type="time" class="field" id="rtIni" title="Hora de entrada" value="${f.inicio}"><input type="time" class="field" id="rtFin" title="Hora de salida" value="${f.fin}"></div>
+    <div class="box"><label>Horario</label><div class="row2">${horaHTML('rtIni', f.inicio, 'Hora de entrada')}${horaHTML('rtFin', f.fin, 'Hora de salida')}</div>
       <div style="text-align:center;margin-top:12px"><button class="plus-sq" disabled title="Agregar otro tramo horario: no disponible en el prototipo"><i class="ti ti-plus"></i></button></div></div>
     <div class="box"><label>Descripción</label><textarea class="field ta" id="rtDesc" maxlength="250" placeholder="Escribe una descripción">${f.desc}</textarea><div class="cnt" id="rtCnt">${f.desc.length}/250</div></div>`;
   $('drFoot').className = 'dr-foot dos';
   $('drFoot').innerHTML = `<button class="link" id="rtDescartar">Descartar turno</button><button class="btn-primary" id="rtOk">${dr.k ? 'Guardar cambios' : 'Crear turno'}</button>`;
   const leer = () => { f.nombre = $('rtNom').value; f.color = $('rtCol').value; f.inicio = $('rtIni').value; f.fin = $('rtFin').value; f.desc = $('rtDesc').value; };
-  const ok = () => f.nombre.trim() && f.inicio && f.fin && f.fin > f.inicio;
+  const ok = () => f.nombre.trim() && horaOk(f.inicio) && horaOk(f.fin) && f.fin > f.inicio;
   const validar = () => { leer(); $('rtDot').style.background = COLORES[f.color]; $('rtCnt').textContent = `${f.desc.length}/250`; $('rtOk').disabled = !ok(); };
   $('drBody').oninput = validar; $('drBody').onchange = validar; validar();
   $('rtDescartar').onclick = () => { const v = dr.volver; closeDrawer(); if (v) v(null); };
@@ -409,18 +432,10 @@ paintConflictos = function () {
   _paintConf();
   if (!VIS.length) return;
   const presentes = Object.keys(TIPOS).filter(t => VIS.some(c => c.tipo === t));
-  if (dr.cfFiltro && !presentes.includes(dr.cfFiltro)) dr.cfFiltro = null;
-  const grupos = $('drBody').querySelectorAll('.cf-group');
-  grupos.forEach((g, i) => {
+  $('drBody').querySelectorAll('.cf-group').forEach((g, i) => {
     const t = presentes[i], gt = g.querySelector('.cf-gt');
     gt.classList.add(TIPOS[t].sev); gt.insertAdjacentHTML('afterbegin', `<i class="ti ti-${CF_TIPO[t][1]}"></i>`);
-    g.style.display = !dr.cfFiltro || dr.cfFiltro === t ? '' : 'none';
   });
-  const chip = (t, lab, n, sev, ic) => `<button class="cf-chip ${sev || ''} ${(dr.cfFiltro || null) === t ? 'on' : ''}" data-t="${t || ''}">${ic ? `<i class="ti ti-${ic}"></i>` : ''}${lab} (${n})</button>`;
-  const html = `<div class="cf-chips">${chip(null, 'Todos', VIS.length)}${presentes.map(t => chip(t, CF_TIPO[t][0], VIS.filter(c => c.tipo === t).length, TIPOS[t].sev, CF_TIPO[t][1])).join('')}</div>`;
-  const banner = $('drBody').querySelector('.cf-banner');
-  banner.insertAdjacentHTML('afterend', html);
-  $('drBody').querySelectorAll('.cf-chip').forEach(b => b.onclick = () => { dr.cfFiltro = b.dataset.t || null; paintConflictos(); });
 };
 
 /* ---------- Plantillas de turnos ---------- */
@@ -589,8 +604,7 @@ function paintAsignarPlantilla() {
   $('drTitle').textContent = 'Asignar plantilla'; $('drBack').style.display = dr.libre ? 'none' : 'block';
   $('drBody').innerHTML = `
     <div class="box"><label>Colaboradores</label>
-      ${a.emps.length ? `<div class="chips">${a.emps.map(id => `<span class="chip">${COLABORADORES[id].nombre}<button data-quitar="${id}" aria-label="Quitar"><i class="ti ti-x" style="font-size:12px"></i></button></span>`).join('')}</div>` : ''}
-      <select class="field" id="apEmp"><option value="">Buscar</option>${libres.filter(c => !a.emps.includes(c.id)).map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')}</select></div>
+      ${mselHTML('apEmpSel', a.emps, libres)}</div>
     <div class="box"><label>Fecha de inicio</label><input type="date" class="field" id="apFecha" value="${a.fecha}"></div>
     <div class="box"><label>Ubicación (Opcional)</label><select class="field" id="apUbi"><option value="">Buscar</option>${SEDES.flatMap(g => g.items).map(x => `<option ${x === a.ubic ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
     <div class="box"><label>Plantilla</label>
@@ -605,8 +619,8 @@ function paintAsignarPlantilla() {
   $('drBody').onchange = validar; $('drBody').oninput = e => { if (e.target.id !== 'apQ') validar(); };
   $('apQ').oninput = e => { const q = e.target.value.trim().toLowerCase(); $('apList').querySelectorAll('.opt').forEach(b => b.style.display = b.dataset.n.includes(q) ? '' : 'none'); };
   $('apList').onclick = e => { const b = e.target.closest('.opt'); if (!b) return; a.plId = b.dataset.p; $('apList').querySelectorAll('.opt').forEach(o => o.classList.toggle('sel', o === b)); validar(); };
-  $('apEmp').onchange = () => { leer(); if ($('apEmp').value !== '') a.emps.push(+$('apEmp').value); paintAsignarPlantilla(); };
-  $('drBody').querySelectorAll('[data-quitar]').forEach(b => b.onclick = () => { leer(); a.emps = a.emps.filter(id => id !== +b.dataset.quitar); paintAsignarPlantilla(); });
+  wireMsel('apEmpSel', id => { leer(); a.emps.push(id); paintAsignarPlantilla(); $('apEmpSel').classList.add('open'); $('apEmpSel').querySelector('.msel-q').focus(); },
+    id => { leer(); a.emps = a.emps.filter(x => x !== id); paintAsignarPlantilla(); });
   $('apCrear').onclick = () => {
     leer(); const estado = { emp: dr.emp, dia: dr.dia, libre: dr.libre, ap: a };
     closeDrawer();
@@ -802,5 +816,30 @@ $('coachCobNo').onclick = ocultarCoachCob;
 $('coachCobIr').onclick = () => { ocultarCoachCob(); abrirVistas(); };
 const _renderCob = render;
 render = function () { _renderCob(); if ($('coachCob').classList.contains('open')) requestAnimationFrame(ubicarCoachCob); };
+
+/* ---------- El borrador sobrevive al ir al Admin y volver (misma pestaña) ---------- */
+function guardarEstado() {
+  try {
+    COLABORADORES.forEach(c => { c.semanas[SEM] = c.semana; c.pubs[SEM] = c.pub; });
+    AUTOS[SEM] = AUTO;
+    sessionStorage.setItem('luna:estado', JSON.stringify({ SEM, MODO, MES, sedeSel, covOpen, turnos: TURNOS, autos: AUTOS, plant: [...PLANT],
+      colabs: COLABORADORES.map(c => ({ semanas: c.semanas, pubs: c.pubs })) }));
+  } catch (e) {}
+}
+function restaurarEstado() {
+  try {
+    const e = JSON.parse(sessionStorage.getItem('luna:estado') || 'null'); if (!e) return;
+    Object.keys(e.turnos || {}).forEach(k => { if (!TURNOS[k]) TURNOS[k] = e.turnos[k]; });
+    COLABORADORES.forEach((c, i) => { const x = e.colabs[i]; if (!x) return; c.semanas = x.semanas; c.pubs = x.pubs; });
+    Object.assign(AUTOS, e.autos || {}); (e.plant || []).forEach(k => PLANT.add(k));
+    SEM = e.SEM || 0; MODO = e.MODO || 'semana'; MES = e.MES || MES; sedeSel = e.sedeSel || null; covOpen = !!e.covOpen;
+    COLABORADORES.forEach(c => { c.semana = c.semanas[SEM] || vacia(); c.pub = c.pubs[SEM]; });
+    AUTO = AUTOS[SEM] || {};
+    if (typeof renderDD === 'function') renderDD();
+  } catch (e) {}
+}
+window.addEventListener('pagehide', guardarEstado);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') guardarEstado(); });
+restaurarEstado();
 
 pintarFechas(); render(); setTimeout(avisoSinRol, 300);

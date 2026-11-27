@@ -595,6 +595,27 @@ body.full .card{border:0;border-radius:0}
 .grid.mes .cov-h:not(.first){cursor:pointer}
 .grid.mes .cov-h:not(.first):hover{background:#f6f7fb}
 .grid.mes .cov-h.falta{color:#9a5b00;font-weight:600}
+
+/* Selector de colaboradores con chips y campo de hora */
+.msel{position:relative}
+.msel-box{min-height:46px;border:1px solid var(--line-2);border-radius:6px;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 36px 6px 10px;cursor:text;position:relative}
+.msel.open .msel-box{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+.msel-box .chip{font-size:13px;padding:5px 8px}
+.msel-box .chip button{background:none;border:0;padding:0 0 0 4px;cursor:pointer;color:inherit;display:inline-flex}
+.msel-q{border:0;outline:0;flex:1;min-width:90px;font:inherit;font-size:15px;background:transparent;height:30px}
+.msel-ch{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:20px;color:#2b3038}
+.msel-dd{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border-radius:10px;box-shadow:0 8px 28px rgba(20,30,60,.16);border:1px solid var(--line);max-height:260px;overflow-y:auto;z-index:5;display:none;padding:6px 0}
+.msel.open .msel-dd{display:block}
+.msel-dd button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;padding:9px 14px;background:none;border:0;text-align:left;font:inherit;font-size:15px;color:#1f2329;cursor:pointer}
+.msel-dd button:hover{background:#f6f7f9}
+.msel-dd small{font-size:12.5px;color:var(--muted)}
+.msel-vacio{padding:10px 14px;color:var(--muted);font-size:14px}
+.field.hora{gap:8px;cursor:text}
+.box .row2 label.field.hora{display:flex;flex:1;margin:0;font-weight:400}
+.field.hora input{border:0;outline:0;flex:1;min-width:0;font:inherit;font-size:15px;background:transparent;letter-spacing:.02em}
+.field.hora .ti{font-size:20px;color:#2b3038}
+.field.hora:focus-within{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+.field.hora.err{border-color:#d32f2f;box-shadow:0 0 0 1px #d32f2f}
 </style>
 </head>
 <body>
@@ -733,7 +754,9 @@ const pendiente = c => snap(c) !== (c.pub || JSON.stringify([[],[],[],[],[],[],[
 /* ---------- Motor de conflictos ---------- */
 const TIPOS = Motor.TIPOS;
 const ctxMotor = () => ({turnos:TURNOS, licencias:LICENCIAS, reglas:REGLAS});
-function calcularConflictos(){ return Motor.conflictos(COLABORADORES, ctxMotor()); }
+/* Se validan solo los turnos en borrador con las reglas vigentes del Admin.
+   Lo ya publicado no se vuelve a validar: si cambia una regla, los conflictos se recalculan sobre lo que falta publicar. */
+function calcularConflictos(){ return Motor.conflictos(COLABORADORES.filter(pendiente), ctxMotor()); }
 let CONF = [], VIS = [], MARCAS = {};
 function actualizarConflictos(){
   CONF = calcularConflictos();
@@ -851,12 +874,8 @@ function agregar(c, d, k){
   cambio(); return true;
 }
 function avisoAsignacion(c, base){
-  // Si la asignación generó conflictos para esa persona, se avisa en el mensaje
-  actualizarConflictos();
-  const propios = CONF.filter(x=>x.emp===c.id);
-  if(propios.some(x=>TIPOS[x.tipo].sev==='B')) return toast(`${base}. Se generó un conflicto bloqueante`, true);
-  if(propios.length) return toast(`${base}. Se generó una advertencia`, 'warn');
-  toast(base);
+  // El mensaje de la asignación es siempre de éxito; si generó conflictos, se encienden en el botón Conflictos
+  actualizarConflictos(); toast(base);
 }
 
 /* ---------- Popup rápido (mejora tipo Factorial) ---------- */
