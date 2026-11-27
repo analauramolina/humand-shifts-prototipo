@@ -643,6 +643,9 @@ body.full .card{border:0;border-radius:0}
 #filtrosBtn.on{background:#eef2fd;border-color:var(--primary)}
 .f-badge{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;border-radius:999px;background:var(--primary);color:#fff;font-size:11px;font-weight:700;display:none;place-items:center;padding:0 5px}
 #filtrosBtn.on .f-badge{display:grid}
+.f-borrar{display:none;background:none;border:0;color:var(--navy);font:inherit;font-weight:600;font-size:15px;padding:0 6px;white-space:nowrap;cursor:pointer}
+.f-borrar.on{display:inline-flex}
+.f-borrar:hover{text-decoration:underline}
 .f-acc{border:1px solid var(--line);border-radius:12px;background:#fff;margin-bottom:16px;overflow:hidden}
 .f-acc-h{width:100%;display:flex;align-items:center;justify-content:space-between;background:none;border:0;padding:16px 18px;font:inherit;font-weight:600;font-size:16px;color:#1f2329;cursor:pointer}
 .f-acc-h .ti{font-size:20px;transition:transform .15s}
@@ -703,6 +706,7 @@ body.full .card{border:0;border-radius:0}
             <div class="dd-foot"><button id="ddClear">Limpiar</button></div>
           </div></div>
         <button class="tb-btn sq" id="filtrosBtn" aria-label="Filtros"><i class="ti ti-filter"></i><span class="f-badge" id="filtrosN"></span></button>
+        <button class="f-borrar" id="filtrosBorrar" type="button">Borrar filtros</button>
         <div class="gap-l" style="position:relative"><button class="tb-btn" id="modoBtn"><span id="modoLbl">Semanal</span> <i class="ti ti-chevron-down" id="modoChev"></i></button>
           <div class="dd-modo" id="modoDD"><button data-modo="semana"><span class="radio"></span>Semanal</button><button data-modo="mes"><span class="radio"></span>Mensual</button></div></div>
         <div class="date-nav">

@@ -854,6 +854,7 @@ const PUESTOS_FILTRO = () => [...ROLES.map(r => [r, r]), ['sin', 'Sin rol labora
 function pintarBotonFiltro() {
   const n = FILTRO.emps.length + FILTRO.puestos.length;
   $('filtrosBtn').classList.toggle('on', n > 0); $('filtrosN').textContent = n || '';
+  $('filtrosBorrar').classList.toggle('on', n > 0);
 }
 $('filtrosBtn').onclick = e => { e.stopPropagation(); closePopSilencioso(); openDrawer('filtros', 0, 0, true); };
 function paintFiltros() {
@@ -870,9 +871,12 @@ function paintFiltros() {
     id => { f.emps = f.emps.filter(x => x !== id); paintFiltros(); });
   $('fPuestoAcc').querySelector('.f-acc-h').onclick = () => $('fPuestoAcc').classList.toggle('open');
   $('drBody').querySelectorAll('[data-puesto]').forEach(cb => cb.onchange = () => { const v = cb.dataset.puesto; f.puestos = cb.checked ? [...f.puestos, v] : f.puestos.filter(x => x !== v); paintFiltros(); });
-  $('fLimpiar').onclick = () => { dr.f = { emps: [], puestos: [] }; paintFiltros(); };
+  $('fLimpiar').onclick = () => { closeDrawer(); borrarFiltros(); };
   $('fAplicar').onclick = () => { FILTRO = { emps: [...f.emps], puestos: [...f.puestos] }; closeDrawer(); pintarBotonFiltro(); const n = LISTA.length; toast(FILTRO.emps.length + FILTRO.puestos.length ? `Se muestran ${n} colaborador${n === 1 ? '' : 'es'} según los filtros` : 'Se quitaron los filtros'); };
 }
+// Quitar todos los filtros de una vez (botón Borrar filtros o Limpiar selección del panel)
+function borrarFiltros() { FILTRO = { emps: [], puestos: [] }; pintarBotonFiltro(); render(); toast('Se quitaron los filtros'); }
+$('filtrosBorrar').onclick = e => { e.stopPropagation(); borrarFiltros(); };
 const _paintFiltros = paintDrawer;
 paintDrawer = function () { if (dr && dr.vista === 'filtros') { $('drFoot').className = 'dr-foot'; return paintFiltros(); } _paintFiltros(); };
 
