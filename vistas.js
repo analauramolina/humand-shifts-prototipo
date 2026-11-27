@@ -573,7 +573,7 @@ function paintPeTurno() {
     <label class="field" style="justify-content:flex-start;gap:8px;margin-bottom:4px"><i class="ti ti-search" style="font-size:18px;color:#7a818c"></i><input id="ptQ" class="inp-bare" placeholder="Buscar por nombre"></label>
     <div class="repo scroll" id="ptList">${Object.keys(TURNOS).filter(k => !TURNOS[k].eliminado).map(k => { const t = TURNOS[k];
       return `<button class="opt pe-opt ${dr.sel === k ? 'sel' : ''}" data-k="${k}" data-n="${esc(t.nombre.toLowerCase())}" style="--tc:${colorTurno(k)}"><div><div class="n">${esc(t.nombre)}</div><div class="h">${t.inicio} - ${t.fin}</div></div><div class="d">${fmtHM(t.horas)} programadas</div></button>`; }).join('')}</div>
-    <button class="btn-out" id="ptCrear"><i class="ti ti-plus"></i>Crear turno</button></div>`;
+    <button class="btn-add" id="ptCrear"><i class="ti ti-plus"></i>Crear turno</button></div>`;
   $('drFoot').innerHTML = `<button class="btn-primary" id="ptOk" style="width:100%" ${dr.sel ? '' : 'disabled'}>Agregar turno</button>`;
   $('ptQ').oninput = e => { const q = e.target.value.trim().toLowerCase(); $('ptList').querySelectorAll('.opt').forEach(b => b.style.display = b.dataset.n.includes(q) ? '' : 'none'); };
   $('ptList').onclick = e => { const b = e.target.closest('.opt'); if (!b) return; dr.sel = b.dataset.k; $('ptList').querySelectorAll('.opt').forEach(o => o.classList.toggle('sel', o === b)); $('ptOk').disabled = false; };
@@ -595,7 +595,7 @@ function paintAsignarPlantilla() {
     <div class="box"><label>Plantilla</label>
       <label class="field" style="justify-content:flex-start;gap:8px;margin-bottom:4px"><i class="ti ti-search" style="font-size:18px;color:#7a818c"></i><input id="apQ" class="inp-bare" placeholder="Buscar"></label>
       <div class="repo scroll" id="apList">${PLANTILLAS.map(p => `<button class="opt ${a.plId === p.id ? 'sel' : ''}" data-p="${p.id}" data-n="${esc(p.nombre.toLowerCase())}"><div><div class="sub">${resumenPl(p.patron)}</div><div class="n" style="font-size:16px">${esc(p.nombre)}</div>${p.desc ? `<div class="sub">${esc(p.desc)}</div>` : ''}</div><div class="d">${fmtTot(statsPl(p.patron).horas)} totales</div></button>`).join('') || '<div class="hint">Todavía no hay plantillas creadas.</div>'}</div>
-      <button class="btn-out" id="apCrear"><i class="ti ti-plus"></i>Crear plantilla</button></div>
+      <button class="btn-add" id="apCrear"><i class="ti ti-plus"></i>Crear plantilla</button></div>
     <div class="box"><label>Recurrencia</label><label class="check"><input type="checkbox" id="apRep" ${a.rep ? 'checked' : ''}><span>Repetir plantilla<small>La plantilla se vuelve a asignar al terminar el ciclo.</small></span></label></div>
     <div class="box"><label>Días festivos</label><label class="check"><input type="checkbox" id="apFest" ${a.fest ? 'checked' : ''}><span>Incluir días festivos<small>Los turnos se asignan aunque el día sea feriado.</small></span></label></div>`;
   $('drFoot').innerHTML = `<button class="btn-primary" id="apOk" style="width:100%">Asignar plantilla</button>`;
