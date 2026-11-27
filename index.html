@@ -914,12 +914,19 @@ function openPop(cell){
       <button class="pill-adv" id="popAdv"><i class="ti ti-plus"></i>Opciones avanzadas</button>
     </div>`;
   pop.classList.add('open');
-  const r = (document.querySelector(`.cell[data-e="${emp.id}"][data-d="${dia}"]`)||cell).getBoundingClientRect();
-  const pw = 320, ph = pop.offsetHeight;
-  let left = Math.max(12, Math.min(r.left + r.width/2 - pw/2, innerWidth - pw - 12));
-  let top = r.bottom + 6;
-  if(top + ph > innerHeight - 12) top = r.top - ph - 6;
-  pop.style.left = left+'px'; pop.style.top = Math.max(12,top)+'px';
+  let r = (document.querySelector(`.cell[data-e="${emp.id}"][data-d="${dia}"]`)||cell).getBoundingClientRect();
+  // Se abre pegado a la celda: debajo si entra; si no, al costado (derecha o izquierda), alineado con la celda
+  const pw = 320, ph = pop.offsetHeight, m = 12;
+  let left, top;
+  // Si no entra debajo, primero se acerca la celda al centro de la pantalla
+  if(r.bottom + 6 + ph > innerHeight - m){ const el = document.querySelector(`.cell[data-e="${emp.id}"][data-d="${dia}"]`); if(el){ popQuieto = Date.now() + 400; el.scrollIntoView({block:'center', inline:'nearest'}); r = el.getBoundingClientRect(); } }
+  if(r.bottom + 6 + ph <= innerHeight - m){ top = r.bottom + 6; left = r.left + r.width/2 - pw/2; }
+  else {
+    top = Math.min(Math.max(m, r.top), innerHeight - ph - m);
+    left = r.right + 8 + pw <= innerWidth - m ? r.right + 8 : r.left - pw - 8;
+  }
+  left = Math.max(m, Math.min(left, innerWidth - pw - m));
+  pop.style.left = left+'px'; pop.style.top = Math.max(m,top)+'px';
   pop.querySelectorAll('.opt').forEach(b => b.onclick = () => {
     const k=b.dataset.k;
     if(actual.includes(k)){ tocar(emp,dia); emp.semana[dia]=actual.filter(x=>x!==k); cambio(); closePop(); toast('Quitaste el turno'); return; }
@@ -1401,7 +1408,8 @@ function renderDD(){
 btn.addEventListener('click', e => { hideCoach(); dd.classList.toggle('open'); setChev(dd.classList.contains('open')); e.stopPropagation(); });
 document.addEventListener('click', () => { dd.classList.remove('open'); setChev(false); if($('pop').classList.contains('open')) closePop(); });
 document.addEventListener('keydown', e => { if(e.key==='Escape'){ if(cm){ cerrarVistas(); return; } if(pasteMode){ salirPegado(); render(); return; } if(selMode){ salirSeleccion(); return; } if(dr) closeDrawer(); else if($('pop').classList.contains('open')) closePop(); } });
-window.addEventListener('scroll', () => { if($('pop').classList.contains('open')) closePop(); }, true);
+let popQuieto = 0; // mientras la app acerca la celda, el desplazamiento no cierra el atajo
+window.addEventListener('scroll', () => { if($('pop').classList.contains('open') && Date.now() > popQuieto) closePop(); }, true);
 $('ddList').addEventListener('click', e => {
   const o = e.target.closest('.dd-opt'); if(!o) return;
   sedeSel = o.dataset.s; hideCoach(); dd.classList.remove('open'); setChev(false); renderDD(); render();
