@@ -811,6 +811,7 @@ function ubicarCoachCob() {
 }
 function ocultarCoachCob() { $('coachCob').classList.remove('open'); const b = $('covAdd'); if (b) b.classList.remove('spot'); }
 window.addEventListener('scroll', ubicarCoachCob, { passive: true }); window.addEventListener('resize', ubicarCoachCob);
+document.querySelector('.grid-scroll').addEventListener('scroll', ubicarCoachCob, { passive: true });
 $('coachCob').addEventListener('click', e => e.stopPropagation());
 $('coachCobNo').onclick = ocultarCoachCob;
 $('coachCobIr').onclick = () => { ocultarCoachCob(); abrirVistas(); };

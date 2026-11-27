@@ -77,7 +77,8 @@ h1{font-size:22px;font-weight:600;margin:4px 0 22px}
 .menu .mh{font-weight:600;font-size:13px;color:var(--muted);padding:8px 16px 4px}
 
 /* Tabla de horarios */
-.table{background:#fff;border:1px solid var(--line);border-radius:14px}
+.table{background:#fff;border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+.table .trow{min-width:1080px}
 .trow.head{border-radius:14px 14px 0 0}
 .trow .menu{min-width:330px}
 .trow .tot{align-self:stretch;display:flex;align-items:center;justify-content:center;background:#f3f5fc;border-left:1px solid var(--line);border-right:1px solid var(--line);font-weight:700;font-size:15px;color:var(--navy);text-align:center}
@@ -217,7 +218,7 @@ h1{font-size:22px;font-weight:600;margin:4px 0 22px}
 .u-filtros{display:flex;align-items:center;gap:10px;font-size:15px}
 .u-filtros .btn-out{height:40px}
 .u-total{font-size:15px;margin:0 0 16px}
-.u-tabla{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.u-tabla{border:1px solid var(--line);border-radius:12px;overflow-x:auto}
 .u-tabla table,.p-tabla table{width:100%;border-collapse:collapse}
 .u-tabla th,.p-tabla th{background:var(--head);text-align:left;font-weight:500;color:#4a515c;font-size:15px;padding:14px 16px;white-space:nowrap}
 .u-tabla th.ord{color:#1f2329;font-weight:600}
@@ -371,8 +372,8 @@ h1{font-size:22px;font-weight:600;margin:4px 0 22px}
 .rg-tab{border-top:1px solid var(--line)}
 .rg-row{display:grid;align-items:center;gap:16px;padding:14px 24px;border-top:1px solid var(--line)}
 .rg-row.head{border-top:0;background:#fafbfc;padding:11px 24px;font-size:13.5px;color:var(--muted)}
-.rg-row.reg{grid-template-columns:minmax(220px,1fr) minmax(220px,1fr) 190px 70px}
-.rg-row.mot{grid-template-columns:minmax(260px,1.4fr) minmax(220px,1fr) 70px}
+.rg-row.reg{grid-template-columns:minmax(170px,1.2fr) minmax(200px,1fr) 180px 56px}
+.rg-row.mot{grid-template-columns:minmax(200px,1.4fr) minmax(200px,1fr) 56px}
 .rg-row .c{justify-self:end;text-align:right}
 .rg-row.head .c{justify-self:end}
 .rg-n{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500;color:#1f2329}
@@ -420,6 +421,15 @@ h1{font-size:22px;font-weight:600;margin:4px 0 22px}
 .rs-l span{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:#2b3038}
 .rs-l .ti{font-size:16px;color:var(--primary)}
 .rs-l .ti svg{stroke-width:1.6}
+
+/* Desplazamiento en pantallas chicas */
+.table::-webkit-scrollbar,.cal-wrap::-webkit-scrollbar,.u-tabla::-webkit-scrollbar,.p-tabla::-webkit-scrollbar{height:12px}
+.table::-webkit-scrollbar-thumb,.cal-wrap::-webkit-scrollbar-thumb,.u-tabla::-webkit-scrollbar-thumb,.p-tabla::-webkit-scrollbar-thumb{background:#c3c7cf;border-radius:8px;border:3px solid #fff}
+.cal-wrap{max-height:calc(100vh - 120px);overflow:auto}
+.cal .ch{position:sticky;top:0;z-index:2}
+.cal .ch.first{z-index:3}
+.u-tabla table{min-width:760px}
+@media (max-width:900px){ .rg-row.reg{grid-template-columns:150px 200px 170px 56px} .rg-row.mot{grid-template-columns:180px 200px 56px} .acc-b{overflow-x:auto} }
 </style>
 </head>
 <body>
@@ -550,7 +560,10 @@ if(location.hash === '#reglas') tabInicial = 'reglas';
 
 /* ---------- Menús desplegables ---------- */
 function toggleMenu(btn, menu){
-  btn.addEventListener('click', e => { e.stopPropagation(); const o = menu.classList.contains('open'); cerrarMenus(); if(!o){ menu.classList.add('open'); btn.classList.add('on'); } });
+  btn.addEventListener('click', e => { e.stopPropagation(); const o = menu.classList.contains('open'); cerrarMenus(); if(!o){ menu.classList.add('open'); btn.classList.add('on');
+    // Los menús de la tabla se ubican sobre la pantalla para que no los corte el desplazamiento horizontal
+    if(menu.closest('.table')){ const r = btn.getBoundingClientRect(); menu.style.position = 'fixed'; menu.style.right = 'auto';
+      menu.style.left = Math.max(8, r.right - menu.offsetWidth) + 'px'; menu.style.top = Math.min(r.bottom + 6, innerHeight - menu.offsetHeight - 8) + 'px'; } } });
   menu.addEventListener('click', e => e.stopPropagation());
 }
 function cerrarMenus(){ document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open')); document.querySelectorAll('.kebab.on,.btn-out.on').forEach(b=>b.classList.remove('on')); }

@@ -53,8 +53,8 @@ button{font-family:inherit;cursor:pointer}
 
 /* Card */
 .card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
-.toolbar{display:flex;align-items:center;gap:10px;padding:24px 26px 12px}
-.tb-btn{height:42px;border:1px solid var(--btn-border);background:#fff;color:var(--navy);border-radius:6px;padding:0 16px;font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:6px;position:relative}
+.toolbar{display:flex;align-items:center;gap:10px;row-gap:10px;flex-wrap:wrap;padding:24px 26px 12px}
+.tb-btn{white-space:nowrap;flex:none;height:42px;border:1px solid var(--btn-border);background:#fff;color:var(--navy);border-radius:6px;padding:0 16px;font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:6px;position:relative}
 .tb-btn .ti{font-size:17px}
 .tb-btn.sq{width:42px;padding:0;justify-content:center}
 .tb-btn.sq .ti{font-size:22px}
@@ -83,10 +83,10 @@ button{font-family:inherit;cursor:pointer}
 .dd-foot button{background:none;border:0;color:var(--navy);font-weight:600;font-size:17px}
 
 /* Grid */
-.grid-scroll{overflow-x:auto;border-top:1px solid var(--line)}
-.grid{display:grid;grid-template-columns:282px repeat(7,minmax(150px,1fr));min-width:1332px}
-.gh{background:var(--head);height:76px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px;color:#1f2329}
-.gh.first{justify-content:flex-start;padding-left:26px;border-right:3px solid #d0d3da;position:sticky;left:0;z-index:3}
+.grid-scroll{overflow:auto;border-top:1px solid var(--line);max-height:calc(100vh - 110px)}
+.grid{display:grid;grid-template-columns:262px repeat(7,minmax(118px,1fr));min-width:1088px}
+.gh{position:sticky;top:0;z-index:2;background:var(--head);height:76px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px;color:#1f2329}
+.gh.first{justify-content:flex-start;padding-left:26px;border-right:3px solid #d0d3da;position:sticky;left:0;top:0;z-index:4}
 .emp{position:sticky;left:0;z-index:2;background:#fff;border-right:3px solid #d0d3da;border-bottom:1px solid var(--line);display:flex;gap:12px;padding:14px 16px 14px 24px;align-items:flex-start;min-height:96px}
 .av{width:36px;height:36px;border-radius:50%;flex:none;background:#eef0f3;border:1px solid #d9dce2;display:grid;place-items:center;color:#4a515c;margin-top:2px}
 .av .ti{font-size:20px}
@@ -616,6 +616,25 @@ body.full .card{border:0;border-radius:0}
 .field.hora .ti{font-size:20px;color:#2b3038}
 .field.hora:focus-within{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
 .field.hora.err{border-color:#d32f2f;box-shadow:0 0 0 1px #d32f2f}
+
+/* Proporciones: la barra de fechas no se corta y la grilla entra completa en pantallas medianas */
+.date-nav{flex:none}
+.date-nav span{white-space:nowrap;padding:0 10px;font-size:15px}
+/* Proporciones más cercanas a Humand: menú lateral y columnas más angostas */
+.sidebar{width:248px}
+.main{padding:24px 26px 40px}
+.toolbar{padding:20px 20px 12px}
+.search-wrap{padding:0 20px 16px}
+.gap-l{margin-left:clamp(8px,3vw,110px)}
+@media (max-width:1380px){ .rep-l{display:none} .toolbar{gap:8px} }
+.tb-btn{padding:0 12px;font-size:14.5px}
+.grid{grid-template-columns:240px repeat(7,minmax(108px,1fr));min-width:996px}
+.cell{padding:10px 6px}
+.main{min-width:0}
+body.full .grid-scroll{max-height:calc(100vh - 150px)}
+.grid-scroll::-webkit-scrollbar{height:12px;width:12px}
+.grid-scroll::-webkit-scrollbar-thumb{background:#c3c7cf;border-radius:8px;border:3px solid #fff}
+.grid-scroll::-webkit-scrollbar-track{background:#f6f7f9}
 </style>
 </head>
 <body>
@@ -678,7 +697,7 @@ body.full .card{border:0;border-radius:0}
         <div class="spacer"></div>
         <button class="tb-btn sq add-btn" aria-label="Agregar"><i class="ti ti-circle-plus"></i></button>
         <button class="tb-btn sq" aria-label="Más opciones"><i class="ti ti-dots"></i></button>
-        <button class="tb-btn" id="repoBtn"><i class="ti ti-calendar-event"></i>Repositorio de turnos</button>
+        <button class="tb-btn" id="repoBtn" title="Repositorio de turnos"><i class="ti ti-calendar-event"></i>Repositorio<span class="rep-l">&nbsp;de turnos</span></button>
         <button class="icon-btn" id="fullBtn" aria-label="Pantalla completa" style="margin-left:6px"><i class="ti ti-arrows-maximize" style="font-size:26px"></i></button>
       </div>
       <div class="search-wrap">
