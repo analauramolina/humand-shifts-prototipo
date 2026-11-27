@@ -45,7 +45,7 @@ function mostrarSeccion(sec) {
   $('mainHorarios').style.display = sec === 'horarios' ? '' : 'none';
   $('mainUsr').style.display = sec === 'usuarios' ? '' : 'none';
   document.querySelectorAll('#sidebar .nav-item').forEach(n => n.classList.toggle('active', n.querySelector('.label').textContent === (sec === 'usuarios' ? 'Usuarios' : 'Horarios y turnos')));
-  document.title = sec === 'usuarios' ? 'Usuarios' : 'Horarios laborales';
+  document.title = sec === 'usuarios' ? 'Usuarios' : 'Horarios y turnos';
   if (sec === 'usuarios') pintarUsuarios();
 }
 document.querySelectorAll('#sidebar .nav-item').forEach(n => {

@@ -73,8 +73,8 @@ const Motor = (() => {
     semanal:  { titulo: 'Descanso semanal obligatorio',        sev: 'B', regla: R.descansoSemanal != null ? `Mínimo ${R.descansoSemanal}h corridas en la semana` : '' },
     entre:    { titulo: 'Descanso entre jornadas',             sev: 'B', regla: R.descansoEntreJornadas != null ? `Mínimo ${R.descansoEntreJornadas}h corridas` : '' },
     licencia: { titulo: 'Turno durante vacaciones o ausencia', sev: 'A' },
-    diario:   { titulo: 'Tope diario de horas',                sev: 'A', regla: R.topeDiario != null ? `Máximo ${R.topeDiario}h por día` : '' },
-    semana:   { titulo: 'Tope semanal de horas',               sev: 'A', regla: R.topeSemanal != null ? `Máximo ${R.topeSemanal}h por semana` : '' },
+    diario:   { titulo: 'Máximo de horas diario',                sev: 'A', regla: R.topeDiario != null ? `Máximo ${R.topeDiario}h por día` : '' },
+    semana:   { titulo: 'Máximo de horas semanal',               sev: 'A', regla: R.topeSemanal != null ? `Máximo ${R.topeSemanal}h por semana` : '' },
   };
 
   /* ---------- Validador: conflictos de un colaborador ---------- */

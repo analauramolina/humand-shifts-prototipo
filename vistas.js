@@ -411,7 +411,7 @@ document.addEventListener('keydown', e => {
 
 /* ---------- Tipos de conflicto: etiqueta en la tarjeta y filtros en el panel ---------- */
 const CF_TIPO = { solap: ['Solapado', 'stack-2'], desc: ['En día de descanso', 'bed'], semanal: ['Descanso semanal', 'calendar-x'], entre: ['Entre jornadas', 'moon'],
-  licencia: ['En licencia', 'calendar-off'], diario: ['Tope diario', 'clock'], semana: ['Tope semanal', 'calendar-time'] };
+  licencia: ['En licencia', 'calendar-off'], diario: ['Máximo de horas diario', 'clock'], semana: ['Máximo de horas semanal', 'calendar-time'] };
 let CF_KEYS = {};
 const _actConf = actualizarConflictos;
 actualizarConflictos = function () {

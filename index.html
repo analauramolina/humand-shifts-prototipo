@@ -1000,8 +1000,8 @@ function filaConflicto(cf){
   if(cf.tipo==='entre'){ row = boxTurno(...cf.turnos[0]) + arrow + boxTurno(...cf.turnos[1]); note = `Hay ${fmtH(cf.gap)} de descanso entre el ${DIAS_LARGOS[cf.turnos[0][0]]} y el ${DIAS_LARGOS[cf.turnos[1][0]]}.`; }
   if(cf.tipo==='semanal') row = `<div class="cf-box"><b>${fmtH(cf.gap)} corridas</b><span>descanso más largo de la semana</span></div>` + arrow + `<div class="cf-box"><b>Descanso semanal</b><span>mínimo ${REGLAS.descansoSemanal}h corridas</span></div>`;
   if(cf.tipo==='licencia') row = boxTurno(...cf.turnos[0]) + arrow + `<div class="cf-box"><b>${cf.licencia}</b><span>aprobada</span></div>`;
-  if(cf.tipo==='diario') row = `<div class="cf-box"><b>${fmtH(cf.horas)} asignadas</b><span>en el día</span></div>` + arrow + `<div class="cf-box"><b>Tope diario</b><span>${REGLAS.topeDiario}h</span></div>`;
-  if(cf.tipo==='semana') row = `<div class="cf-box"><b>${fmtH(cf.horas)} asignadas</b><span>en la semana</span></div>` + arrow + `<div class="cf-box"><b>Tope semanal</b><span>${REGLAS.topeSemanal}h</span></div>`;
+  if(cf.tipo==='diario') row = `<div class="cf-box"><b>${fmtH(cf.horas)} asignadas</b><span>en el día</span></div>` + arrow + `<div class="cf-box"><b>Máximo de horas diario</b><span>${REGLAS.topeDiario}h</span></div>`;
+  if(cf.tipo==='semana') row = `<div class="cf-box"><b>${fmtH(cf.horas)} asignadas</b><span>en la semana</span></div>` + arrow + `<div class="cf-box"><b>Máximo de horas semanal</b><span>${REGLAS.topeSemanal}h</span></div>`;
   return `<div class="cf-date">${fecha}</div><div class="cf-row">${row}${eye}</div>${note?`<div class="cf-note">${note}</div>`:''}`;
 }
 function paintConflictos(){
