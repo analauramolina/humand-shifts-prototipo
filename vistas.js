@@ -843,4 +843,9 @@ window.addEventListener('pagehide', guardarEstado);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') guardarEstado(); });
 restaurarEstado();
 
+/* El rol de cada persona se relee del Admin antes de dibujar la grilla y al volver a la pestaña */
+const _renderPuestos = render;
+render = function () { try { recargarPuestos(); } catch (e) {} _renderPuestos(); };
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
+
 pintarFechas(); render(); setTimeout(avisoSinRol, 300);

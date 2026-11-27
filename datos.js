@@ -95,8 +95,10 @@ const HISTORIAL_LABORAL = (() => {
   if (g) Object.keys(g).forEach(n => { if (h[n]) h[n] = g[n]; });
   return h;
 })();
-/* Puesto actual: el que no tiene fecha de fin; si hay varios, el de inicio más reciente */
-const puestoActual = n => (HISTORIAL_LABORAL[n] || []).filter(p => !p.fin).sort((a, b) => b.inicio.localeCompare(a.inicio))[0] || null;
+/* Puesto actual: el que no terminó antes de la semana que se planifica; si hay varios, el de inicio más reciente */
+/* Fecha de referencia del prototipo: la semana que se está planificando */
+const FECHA_REF = '2026-11-30';
+const puestoActual = n => (HISTORIAL_LABORAL[n] || []).filter(p => p.puesto && (!p.fin || p.fin >= FECHA_REF)).sort((a, b) => b.inicio.localeCompare(a.inicio))[0] || null;
 function aplicarPuestos() {
   COLABORADORES.forEach(c => { const p = puestoActual(c.nombre); if (!p) { c.rol = ''; return; } c.rol = ROLES.includes(p.puesto) ? p.puesto : ''; });
 }

@@ -138,7 +138,7 @@ function pintarPerfil() {
           <button class="p-edit round" id="pEditAct" aria-label="Editar puesto actual" ${act ? '' : 'disabled'}><i class="ti ti-pencil"></i></button></div>
         <div class="p-ct" style="margin-top:26px"><b>Puestos dentro de la organización</b><button class="btn-out" id="pAddPuesto">Agregar puesto <i class="ti ti-plus"></i></button></div>
         <div class="p-tabla"><table><thead><tr><th>Puesto</th><th>Fecha de inicio</th><th>Fecha de fin</th><th>Departamento</th><th>Jefe directo</th><th>Aprobador</th><th></th></tr></thead><tbody>
-          ${hist.map(x => `<tr><td class="pu"><b>${escU(x.puesto)}</b>${!x.fin && act && x.inicio === act.inicio && x.puesto === act.puesto ? '<span class="u-act">Actual</span>' : ''}</td><td>${fmtFecha(x.inicio)}</td><td>${fmtFecha(x.fin)}</td><td>${escU(x.depto || '-')}</td><td><b>${escU(x.jefe || '-')}</b></td><td>${escU(x.aprob || '-')}</td><td class="u-k"><button class="u-kebab sm" data-i="${x.i}" aria-label="Acciones del puesto"><i class="ti ti-dots-vertical"></i></button></td></tr>`).join('') || '<tr><td colspan="7" class="u-vacio">No hay puestos cargados.</td></tr>'}
+          ${hist.map(x => `<tr><td class="pu"><b>${escU(x.puesto)}</b>${act && x.inicio === act.inicio && x.puesto === act.puesto && x.fin === act.fin ? '<span class="u-act">Actual</span>' : ''}</td><td>${fmtFecha(x.inicio)}</td><td>${fmtFecha(x.fin)}</td><td>${escU(x.depto || '-')}</td><td><b>${escU(x.jefe || '-')}</b></td><td>${escU(x.aprob || '-')}</td><td class="u-k"><button class="u-kebab sm" data-i="${x.i}" aria-label="Acciones del puesto"><i class="ti ti-dots-vertical"></i></button></td></tr>`).join('') || '<tr><td colspan="7" class="u-vacio">No hay puestos cargados.</td></tr>'}
         </tbody></table></div>
         <p class="p-nota"><i class="ti ti-info-circle"></i>El puesto actual define el rol laboral de la persona en Turnos laborales: la cobertura, los conflictos y Programar lo usan.</p></div>
       <div class="p-card" id="pc-salario"><div class="p-ct"><div><b>Salario</b><div class="p-cs">Consulta el importe percibido y el historial salarial</div></div><div style="display:flex;gap:10px"><button class="btn-out" data-x>Historial salarial <i class="ti ti-refresh"></i></button><button class="p-edit" data-x aria-label="Editar"><i class="ti ti-pencil"></i></button></div></div>
@@ -197,7 +197,7 @@ function abrirPuesto(i) {
     const nuevo = { puesto: $('fPuesto').value, inicio: $('fIni').value, fin: $('fFin').value, depto: $('fDepto').value, jefe: $('fJefe').value, aprob: $('fAprob').value };
     if (i !== null) h[i] = nuevo;
     else {
-      if (!nuevo.fin) h.forEach(p => { if (!p.fin && p.inicio < nuevo.inicio) { const d = new Date(nuevo.inicio + 'T00:00'); d.setDate(d.getDate() - 1); p.fin = d.toISOString().slice(0, 10); } });
+      h.forEach(p => { if (!p.fin && p.inicio < nuevo.inicio) { const d = new Date(nuevo.inicio + 'T00:00'); d.setDate(d.getDate() - 1); p.fin = d.toISOString().slice(0, 10); } });
       h.push(nuevo);
     }
     guardarPuestos(); aplicarPuestos(); cerrarSheet(); pintarPerfil();
