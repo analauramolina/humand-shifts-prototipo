@@ -418,7 +418,8 @@ h1{font-size:22px;font-weight:600;margin:4px 0 22px}
 .rs-t .ti{font-size:16px}
 .rs-l{display:flex;flex-wrap:wrap;gap:8px 18px}
 .rs-l span{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:#2b3038}
-.rs-l .ti{font-size:13px;color:#fff;background:#2e9e5b;border-radius:50%;width:18px;height:18px;display:inline-grid;place-items:center;padding:2px}
+.rs-l .ti{font-size:16px;color:var(--primary)}
+.rs-l .ti svg{stroke-width:1.6}
 </style>
 </head>
 <body>
@@ -684,10 +685,9 @@ function renderMotor(){
   $('motorPrefs').innerHTML = `<div class="rg-row head mot"><div>Criterio</div><div class="ph">Peso en la decisión${info('Peso en la decisión', 'En la priorización, un criterio en Alta pesa 3 veces más que en Baja.')}</div><div class="c">Activo</div></div>` +
     ids.map(id => { const v = cfg.motor[id], on = v !== 'OFF';
       return `<div class="rg-row mot ${on?'':'off'}"><div class="rg-n">${PREF_TITULO[id]}${info(PREF_TITULO[id], PREF_DESC[id])}</div>
-        <div><div class="sg peso" role="radiogroup" aria-label="Peso de ${PREF_TITULO[id]}">${[['BAJO','Baja'],['MEDIO','Media'],['ALTO','Alta']].map(([k,l]) => `<button role="radio" aria-checked="${v===k}" class="${v===k?'on '+k:''}" data-pref="${id}" data-v="${k}" ${on?'':'disabled'}><span class="bars"><i></i><i></i><i></i></span>${l}</button>`).join('')}</div></div>
+        <div><div class="sg peso" role="radiogroup" aria-label="Peso de ${PREF_TITULO[id]}">${[['BAJO','Baja'],['MEDIO','Media'],['ALTO','Alta']].map(([k,l]) => `<button role="radio" aria-checked="${v===k}" class="${v===k?'on '+k:''}" data-pref="${id}" data-v="${k}" ${on?'':'disabled'}>${l}</button>`).join('')}</div></div>
         <div class="c">${sw(on, `data-pref-on="${id}"`, PREF_TITULO[id])}</div></div>`; }).join('');
-  const reg = PAISES.flatMap(p => REG_DEF.filter(r => cfg.regulacion[p][r.id].on)).length;
-  $('motorRestr').innerHTML = `<div class="rs-t"><i class="ti ti-lock"></i>Siempre se respetan</div><div class="rs-l">${['Cobertura semanal definida','Licencias aprobadas','Puesto de cada persona',`Regulaciones activas (${reg})`].map(t => `<span><i class="ti ti-check"></i>${t}</span>`).join('')}</div>`;
+  $('motorRestr').innerHTML = `<div class="rs-t"><i class="ti ti-lock"></i>Siempre se respetan</div><div class="rs-l">${['Cobertura semanal definida','Licencias aprobadas','Puesto de cada persona','Regulaciones activas'].map(t => `<span><i class="ti ti-check"></i>${t}</span>`).join('')}</div>`;
 }
 function renderReglas(){ renderRegulaciones(); renderMotor(); marcar(); }
 
